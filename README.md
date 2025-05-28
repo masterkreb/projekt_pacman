@@ -17,12 +17,12 @@ Dabei liegt der Fokus **nicht auf dem Code**, sondern auf dem **agilen Arbeiten 
 ## 👥 Team
 Dieses Repository wird von einem Schülerteam aus 6 Personen betreut.  
 **Team-Mitglieder:**  
-- Imad 
-- Mathias  
-- Ricardo  
-- Erisk  
-- Denis  
-- Leon  
+- [Imad](https://github.com/masterkreb)
+- [Mathias](https://github.com/Lunyxium)
+- [Ricardo](https://github.com/RiciYT)
+- [Erisk](https://github.com/EriskReyes)
+- [Denis](https://github.com/perdomodenis)
+- [Leon](https://github.com/Neox-R)
 
 ## 📝 Aktueller Stand
 - ✅ Projektidee festgelegt: Pac-Man  
