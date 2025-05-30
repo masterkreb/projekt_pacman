@@ -1,0 +1,31 @@
+# Bytecode-Dateien
+__pycache__/
+*.py[cod]
+
+# OSX-spezifische Dateien
+.DS_Store
+
+# Windows-spezifische Dateien
+Thumbs.db
+
+# Virtuelle Umgebungen (venv, env etc.), falls ihr eine verwendet
+venv/
+env/
+.env/
+
+# Pygame-Log-Files oder spezielle Pygame-Cache-Dateien (falls vorhanden)
+*.log
+
+# Editor-/IDE-Einstellungen: IntelliJ, VSCode, PyCharm, etc.
+.vscode/
+*.idea/
+
+# Jegliche Builds oder Distributionen, falls ihr später ein Paket erstellt
+build/
+dist/
+*.egg-info/
+
+# Falls ihr Bilder oder andere Assets lokal generiert, die nicht versioniert werden sollen:
+# (z. B. temporäre Screenshots, Export-Ordner o.Ä.)
+*.tmp
+*.swp
