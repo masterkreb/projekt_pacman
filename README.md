@@ -31,6 +31,22 @@ Dieses Repository wird von einem Schülerteam aus 6 Personen betreut.
 - 🟡 Sprint-Planung in Vorbereitung  
 - ⏳ Erste Prototypen in Arbeit
 
+## 📝 Die nächsten Schritte 
+- ⏳ Zusammen im Team die Branches für die ersten Features anlegen. 
+Jede Aufgabe, die wir in einem Sprint umsetzen wollen, bekommt einen eigenen Branch. 
+Mit Branches kann jeder an einem eigenen Teil arbeiten, ohne sich gegenseitig in die Quere zu kommen.
+
+Zum Beispiel:
+
+| User Story / Aufgabe                   | Branch-Name               | Zuständig       |
+| -------------------------------------- | ------------------------- | --------------- |
+| Pac-Man mit Pfeiltasten bewegen        | `feature/pacman-bewegung` | Imad            |
+| Spielfeld (Labyrinth) laden            | `feature/spielfeld`       | Mathias         |
+| Geister-AI (einfaches Bewegungsmuster) | `feature/geister-logik`   | Ricardo & Erisk |
+| Punkte einsammeln und Score anzeigen   | `feature/punkte-zaehler`  | Denis           |
+| Startmenü (Start/Neustart)             | `feature/startmenue`      | Leon            |
+| README erweitern mit Projektinfos      | `docs/readme-erweitern`   | Imad            |
+
 
 ---
 
