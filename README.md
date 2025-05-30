@@ -31,20 +31,6 @@ Dieses Repository wird von einem Schülerteam aus 6 Personen betreut.
 - 🟡 Sprint-Planung in Vorbereitung  
 - ⏳ Erste Prototypen in Arbeit
 
-## 🗂️ Projektstruktur (geplant)
-- `src/` – Quellcode
-- `docs/` – Projektplanung, User Storys, Scrum-Unterlagen
-- `assets/` – Bilder, Sounds usw.
-- `README.md` – Projektdokumentation
-
-## 📆 Zeitplan
-Das Projekt wird in mehreren Sprints umgesetzt.  
-Der genaue Ablauf und die Rollenverteilung erfolgen nach Scrum (Product Owner, Scrum Master, Entwicklerteam).
-
-## 🧩 Nächste Schritte
-- Sprint 1 starten (Grundfunktionen)
-- erste spielbare Version testen
-- Feedback sammeln und iterieren
 
 ---
 
