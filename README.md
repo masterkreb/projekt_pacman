@@ -40,12 +40,12 @@ Zum Beispiel:
 
 | User Story / Aufgabe                   | Branch-Name               | Zuständig       |
 | -------------------------------------- | ------------------------- | --------------- |
-| Pac-Man mit Pfeiltasten bewegen        | `feature/pacman-bewegung` | Imad            |
-| Spielfeld (Labyrinth) laden            | `feature/spielfeld`       | Mathias         |
-| Geister-AI (einfaches Bewegungsmuster) | `feature/geister-logik`   | Ricardo & Erisk |
+| Sounds für das Spiel                   | `feature/sounds`          | Imad            |
+| Pac-Man mit Pfeiltasten bewegen        | `feature/pacman-bewegung` | Mathias         |
+| Spielfeld (Labyrinth) laden            | `feature/spielfeld`       | Ricardo         |
+| Geister-AI (einfaches Bewegungsmuster) | `feature/geister-logik`   | Erisk           |
 | Punkte einsammeln und Score anzeigen   | `feature/punkte-zaehler`  | Denis           |
 | Startmenü (Start/Neustart)             | `feature/startmenue`      | Leon            |
-| README erweitern mit Projektinfos      | `docs/readme-erweitern`   | Imad            |
 
 
 ---
