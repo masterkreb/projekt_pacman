@@ -31,8 +31,8 @@ Dieses Repository wird von einem Schülerteam aus 6 Personen betreut.
 - 🟡 Sprint-Planung in Vorbereitung  
 - ⏳ Erste Prototypen in Arbeit
 
-## 📝 Die nächsten Schritte 
-- ⏳ Zusammen im Team die Branches für die ersten Features anlegen. 
+## ➡️ Die nächsten Schritte 
+- Zusammen im Team die Branches für die ersten Features anlegen. 
 Jede Aufgabe, die wir in einem Sprint umsetzen wollen, bekommt einen eigenen Branch. 
 Mit Branches kann jeder an einem eigenen Teil arbeiten, ohne sich gegenseitig in die Quere zu kommen.
 
