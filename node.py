@@ -2,7 +2,7 @@ class NodeGroup(object):
     """
     Verwaltet die Knoten im Pac-Man-Labyrinth.
     Diese Klasse ist verantwortlich für die Verwaltung der Wegpunkte und Pfade,
-    die Pac-Man und die Geister im Spiel nutzen können.
+    die Pac-Man und die Geister im Spiel nutzen können
     """
 
     def __init__(self, level):

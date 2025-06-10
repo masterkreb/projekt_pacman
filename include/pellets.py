@@ -12,7 +12,7 @@ POWERPELLET = "powerpellet"
 class Pellet(object):
     """
     Basisklasse für normale Pellets im Spiel.
-    Diese sind die kleinen Punkte, die Pac-Man einsammeln kann.
+    Diese sind die kleinen Punkte, die Pac-Man einsammeln kann
     """
     def __init__(self, row, column):
         # Grundlegende Eigenschaften des Pellets

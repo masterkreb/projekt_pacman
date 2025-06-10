@@ -1,6 +1,6 @@
 """
 Konstanten-Definitionen für das Pac-Man Spiel.
-Diese Datei enthält alle wichtigen Konstanten, die im gesamten Spiel verwendet werden.
+Diese Datei enthält alle wichtigen Konstanten, die im gesamten Spiel verwendet werden
 """
 
 # Spielobjekt-Typen
