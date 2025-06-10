@@ -1,5 +1,6 @@
 import pygame
 import pygame_gui
+from pellets import PelletGroup
 
 pygame.init()
 
