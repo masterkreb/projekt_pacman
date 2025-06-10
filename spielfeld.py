@@ -67,3 +67,14 @@ def build_nodes_and_graph():
             if (nx, ny) in node_map:
                 n.neighbors.append(node_map[(nx, ny)])
     return nodes, TILE
+
+def get_tunnel_exit(x, y, dx, dy):
+    TUNNEL_ROW = 14
+    LEFT_TUNNEL_X = 0
+    RIGHT_TUNNEL_X = 27
+    if y == TUNNEL_ROW:
+        if x == LEFT_TUNNEL_X and dx == -1:
+            return (RIGHT_TUNNEL_X, TUNNEL_ROW)
+        if x == RIGHT_TUNNEL_X and dx == 1:
+            return (LEFT_TUNNEL_X, TUNNEL_ROW)
+    return None
