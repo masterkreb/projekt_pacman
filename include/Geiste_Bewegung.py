@@ -9,7 +9,7 @@ WIDTH, HEIGHT = 600, 600
 TILE_SIZE = 30
 ROWS, COLS = HEIGHT // TILE_SIZE, WIDTH // TILE_SIZE
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Pac-Man Geister Separiert und Flüssig")
+pygame.display.set_caption("WakaWakaWaka Geiste Bewegungen")
 
 # Farben
 BLACK = (0, 0, 0)
