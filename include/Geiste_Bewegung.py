@@ -19,7 +19,7 @@ GHOST_COLORS = [(255, 0, 0), (255, 128, 0), (255, 0, 255), (0, 255, 255)]
 
 # Einfaches Labyrinth (1 = Wand, 0 = Weg)
 maze = [
-    [1]*20,
+    [0]*20,
     [1]+[0]*18+[1],
     [1]+[0]*18+[1],
     [1]+[0]*18+[1],
@@ -114,11 +114,6 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    # Labyrinth zeichnen
-    for y in range(ROWS):
-        for x in range(COLS):
-            if maze[y][x] == 1:
-                pygame.draw.rect(screen, WALL_COLOR, (x*TILE_SIZE, y*TILE_SIZE, TILE_SIZE, TILE_SIZE))
 
     # Geister bewegen und zeichnen
     for ghost in ghosts:
