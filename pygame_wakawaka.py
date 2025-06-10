@@ -74,3 +74,5 @@ while is_running:
 
     manager.draw_ui(window_surface)
     pygame.display.update()
+
+
