@@ -41,7 +41,7 @@ except:
 # Hintergrundmusik laden und abspielen
 try:
     pygame.mixer.music.load('menu_music.mp3')  # oder .wav, .ogg
-    pygame.mixer.music.set_volume(0.3)  # Lautstärke 30%
+    pygame.mixer.music.set_volume(1.0)  # Lautstärke 100%
     pygame.mixer.music.play(-1)  # Endlosschleife
     print("Hintergrundmusik geladen!")
 except:
@@ -100,12 +100,12 @@ title_surface = title_font.render("PACMAN", True, pygame.Color('#FF0000'))  # Ro
 subtitle_surface = subtitle_font.render("The Return of the Blue Ghost", True, pygame.Color('#00FFFF'))  # Cyan
 
 # Button-Texte erstellen
-start_text = button_font.render("► START", True, pygame.Color('#FFFFFF'))
-exit_text = button_font.render("✕ EXIT", True, pygame.Color('#FFFFFF'))
+start_text = button_font.render("START", True, pygame.Color('#FFFFFF'))
+exit_text = button_font.render("EXIT", True, pygame.Color('#FFFFFF'))
 
 # Button-Positionen (Resident Evil Style - untereinander, zentriert, WEITER UNTEN)
-start_button_rect = pygame.Rect(220, 550, 100, 40)  # Noch weiter unten (war 450)
-exit_button_rect = pygame.Rect(220, 600, 100, 40)  # Entsprechend weiter unten (war 500)
+start_button_rect = pygame.Rect(220, 575, 100, 40)  # Noch weiter unten (war 450)
+exit_button_rect = pygame.Rect(220, 625, 100, 40)  # Entsprechend weiter unten (war 500)
 
 # Hover-Effekte für Buttons
 start_hovered = False
@@ -287,13 +287,13 @@ while is_running:
         # Custom Buttons zeichnen (Resident Evil Style)
         # Start Button
         start_color = pygame.Color('#FFFF00') if start_hovered else pygame.Color('#FFFFFF')  # Gelb bei Hover
-        start_text_colored = button_font.render("► START", True, start_color)
+        start_text_colored = button_font.render("START", True, start_color)
         start_text_rect = start_text_colored.get_rect(center=start_button_rect.center)
         window_surface.blit(start_text_colored, start_text_rect)
 
         # Exit Button
         exit_color = pygame.Color('#FF4444') if exit_hovered else pygame.Color('#FFFFFF')  # Rot bei Hover
-        exit_text_colored = button_font.render("✕ EXIT", True, exit_color)
+        exit_text_colored = button_font.render("EXIT", True, exit_color)
         exit_text_rect = exit_text_colored.get_rect(center=exit_button_rect.center)
         window_surface.blit(exit_text_colored, exit_text_rect)
 
