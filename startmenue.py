@@ -4,36 +4,64 @@ import sys
 pygame.init()
 WIDTH, HEIGHT = 640, 480
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-font = pygame.font.SysFont(None, 60)
 clock = pygame.time.Clock()
+font = pygame.font.SysFont(None, 60)
 
-START_MENU = True
+# Spielzustände
+RUNNING = "running"
+PAUSED = "paused"
+GAME_OVER = "game over"
+state = RUNNING
 
-def draw_start_menu():
-    text = font.render("Pacman", True, (255, 255, 0))
-    rect = text.get_rect(center=(WIDTH//2, HEIGHT//2 - 60))
+def draw_pause_menu():
+    text = font.render("Pause - P für weiter", True, (255,255,255))
+    rect = text.get_rect(center=(WIDTH//2, HEIGHT//2))
     screen.blit(text, rect)
-    text2 = font.render("Drücke SPACE zum Starten", True, (255,255,255))
-    rect2 = text2.get_rect(center=(WIDTH//2, HEIGHT//2 + 20))
-    screen.blit(text2, rect2)
+
+def draw_game_over():
+    text = font.render("Game Over", True, (255,0,0))
+    rect = text.get_rect(center=(WIDTH//2, HEIGHT//2 - 40))
+    screen.blit(text, rect)
+    restart = font.render("R für Neustart", True, (255,255,255))
+    rect2 = restart.get_rect(center=(WIDTH//2, HEIGHT//2 + 40))
+    screen.blit(restart, rect2)
+
+def reset_game():
+    # Hier Pacman/Level zurücksetzen
+    pass
 
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
-        if START_MENU and event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-            START_MENU = False  # Spiel beginnt
+
+        if state == RUNNING:
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
+                state = PAUSED
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_g:
+                state = GAME_OVER  # Zum Testen: Game Over mit G
+
+        elif state == PAUSED:
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
+                state = RUNNING
+
+        elif state == GAME_OVER:
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_r:
+                state = RUNNING
+                reset_game()
 
     screen.fill((0,0,0))
 
-    if START_MENU:
-        draw_start_menu()
-    else:
-        # Hier beginnt dein eigentliches Spiel!
-        text = font.render("Spiel läuft...", True, (0,255,0))
+    if state == RUNNING:
+        # Hier Pacman, Punkte, Gegner usw. zeichnen
+        text = font.render("Spiel läuft... P=Pause, G=GameOver", True, (255,255,255))
         rect = text.get_rect(center=(WIDTH//2, HEIGHT//2))
         screen.blit(text, rect)
+    elif state == PAUSED:
+        draw_pause_menu()
+    elif state == GAME_OVER:
+        draw_game_over()
 
     pygame.display.flip()
     clock.tick(60)
