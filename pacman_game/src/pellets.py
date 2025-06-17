@@ -80,9 +80,7 @@ class PelletManager:
                     # Skip ghost starting area (center area)
                     center_x, center_y = self.maze.get_center_position()
                     if (abs(x - center_x) <= 3 and abs(y - center_y) <= 3):
-                        continue
-                    
-                    # Create power pellet at specific positions
+                        continue                    # Create power pellet at specific positions
                     is_power_pellet = (x, y) in self.power_pellet_positions
                     
                     # Don't place pellets too close to Pac-Man start
@@ -91,33 +89,46 @@ class PelletManager:
                     
                     pellet = Pellet(x, y, is_power_pellet)
                     self.pellets.append(pellet)
-    
+
     def update(self):
         """Update all pellets"""
         for pellet in self.pellets:
             pellet.update()
-    
+
     def draw(self, screen):
         """Draw all pellets"""
         for pellet in self.pellets:
             pellet.draw(screen)
-    
+
     def check_collection(self, pacman):
         """Check if Pac-Man collected any pellets"""
         total_points = 0
-        pacman_pos = pacman.get_position()
+        
+        # Hole Pac-Mans aktuelle Grid-Position
+        pacman_grid_x = pacman.grid_x
+        pacman_grid_y = pacman.grid_y
+        
+        # Zusätzlich prüfen wir auch die umgebenden Grid-Positionen 
+        # für bessere Kollisionserkennung während der Bewegung
+        positions_to_check = [
+            (pacman_grid_x, pacman_grid_y),
+            # Prüfe auch basierend auf Pac-Mans exakter Pixel-Position
+            (int(pacman.x // GRID_SIZE), int(pacman.y // GRID_SIZE)),
+            # Prüfe Mittelpunkt von Pac-Man
+            (int((pacman.x + pacman.size/2) // GRID_SIZE), int((pacman.y + pacman.size/2) // GRID_SIZE))
+        ]
         
         for pellet in self.pellets:
-            if (not pellet.collected and 
-                pellet.grid_x == pacman_pos[0] and 
-                pellet.grid_y == pacman_pos[1]):
-                
-                pellet.collected = True
-                total_points += pellet.get_points()
-                
-                # If it's a power pellet, make ghosts frightened
-                if pellet.is_power_pellet:
-                    self.trigger_power_mode()
+            if not pellet.collected:
+                for check_x, check_y in positions_to_check:
+                    if (pellet.grid_x == check_x and pellet.grid_y == check_y):
+                        pellet.collected = True
+                        total_points += pellet.get_points()
+                        
+                        # If it's a power pellet, make ghosts frightened
+                        if pellet.is_power_pellet:
+                            self.trigger_power_mode()
+                        break  # Aus der inner loop ausbrechen
         
         return total_points
     
