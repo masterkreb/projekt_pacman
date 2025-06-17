@@ -1,11 +1,9 @@
 import pygame
 import sys
 
-pygame.init()
+# --- Globale Variablen & Konstanten ---
 WIDTH, HEIGHT = 640, 480
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-clock = pygame.time.Clock()
-font = pygame.font.SysFont(None, 60)
+MAX_LIVES = 3
 
 # Spielzustände
 RUNNING = "running"
@@ -13,11 +11,17 @@ PAUSED = "paused"
 GAME_OVER = "game over"
 START_MENU = "start"
 
-state = START_MENU
+# --- Initialisierung ---
+pygame.init()
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+clock = pygame.time.Clock()
+font = pygame.font.SysFont(None, 60)
 
-MAX_LIVES = 3
+# --- Spielstatus ---
+state = START_MENU
 lives = MAX_LIVES
 
+# --- Zeichnen-Funktionen ---
 def draw_pause_menu():
     text = font.render("Pause - P für weiter", True, (255,255,255))
     rect = text.get_rect(center=(WIDTH//2, HEIGHT//2))
@@ -44,13 +48,36 @@ def draw_start_menu():
     rect2 = info.get_rect(center=(WIDTH//2, HEIGHT//2 + 20))
     screen.blit(info, rect2)
 
+def draw_game_screen():
+    # Hier Pacman, Punkte, Gegner usw. zeichnen
+    text = font.render("Spiel läuft... P=Pause, L=Leben verlieren", True, (255,255,255))
+    rect = text.get_rect(center=(WIDTH//2, HEIGHT//2))
+    screen.blit(text, rect)
+    draw_lives()
+
+def draw():
+    screen.fill((0,0,0))
+    if state == START_MENU:
+        draw_start_menu()
+    elif state == RUNNING:
+        draw_game_screen()
+    elif state == PAUSED:
+        draw_pause_menu()
+        draw_lives()
+    elif state == GAME_OVER:
+        draw_game_over()
+    pygame.display.flip()
+
+# --- Reset-Funktion ---
 def reset_game():
     global lives, state
     lives = MAX_LIVES
     state = RUNNING
     # Hier alles für den Neustart deines Spiels zurücksetzen
 
-while True:
+# --- Eventhandling ---
+def handle_events():
+    global state, lives
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -78,23 +105,14 @@ while True:
         elif state == GAME_OVER:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_r:
                 reset_game()
-            # Du könntest auch einen Quit-Button etc. einbauen
 
-    screen.fill((0,0,0))
+# --- Hauptschleife ---
+def main():
+    global state
+    while True:
+        handle_events()
+        draw()
+        clock.tick(60)
 
-    if state == START_MENU:
-        draw_start_menu()
-    elif state == RUNNING:
-        # Hier Pacman, Punkte, Gegner usw. zeichnen
-        text = font.render("Spiel läuft... P=Pause, L=Leben verlieren", True, (255,255,255))
-        rect = text.get_rect(center=(WIDTH//2, HEIGHT//2))
-        screen.blit(text, rect)
-        draw_lives()
-    elif state == PAUSED:
-        draw_pause_menu()
-        draw_lives()
-    elif state == GAME_OVER:
-        draw_game_over()
-
-    pygame.display.flip()
-    clock.tick(60)
+if __name__ == "__main__":
+    main()
