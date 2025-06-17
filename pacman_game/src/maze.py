@@ -192,21 +192,21 @@ class Maze:
 
     def draw_nodes(self, screen, show_nodes=False, src=None):
         """Zeichnet die Nodes (Knotenpunkte) für Debug-Zwecke"""
-        if show_nodes:
+       # if show_nodes:
             # Lade Nodes nur einmal und speichere sie
-            if not hasattr(self, 'nodes_and_map'):
-                from src.nodes import build_nodes_and_graph
-                self.nodes_and_map = build_nodes_and_graph(self)
+            #if not hasattr(self, 'nodes_and_map'):
+            #    from src.nodes import build_nodes_and_graph
+            #    self.nodes_and_map = build_nodes_and_graph(self)
 
-            nodes, node_map = self.nodes_and_map
+           # nodes, node_map = self.nodes_and_map
 
             # Zeichne zuerst die Verbindungen, damit sie hinter den Knoten liegen
-            for node in nodes:
-                for neighbor in node.neighbors:
-                    pygame.draw.line(screen, GREEN,
-                                    (node.px, node.py),
-                                    (neighbor.px, neighbor.py), 1)
+         #   for node in nodes:
+             #   for neighbor in node.neighbors:
+                  #  pygame.draw.line(screen, GREEN,
+                                  #  (node.px, node.py),
+                                  #  (neighbor.px, neighbor.py), 1)
 
             # Dann zeichne die Knoten (damit sie über den Linien liegen)
-            for node in nodes:
-                pygame.draw.circle(screen, RED, (node.px, node.py), 3)
+           # for node in nodes:
+          #      pygame.draw.circle(screen, RED, (node.px, node.py), 3)

@@ -7,7 +7,26 @@ Includes main menu, credits, and horror transition effects
 import pygame
 import pygame_gui
 import os
+import random
 from typing import Optional, Dict, List, Tuple
+
+
+class Menu:
+    """Menu-Klasse als Wrapper für MenuSystem, um Kompatibilität mit game.py zu gewährleisten"""
+
+    def __init__(self, screen_width=540, screen_height=720):
+        """Initialisiert das Menü-System"""
+        # Verwende die tatsächliche Bildschirmgröße aus der Game-Klasse
+        from .constants import SCREEN_WIDTH, SCREEN_HEIGHT
+        self.menu_system = MenuSystem(SCREEN_WIDTH, SCREEN_HEIGHT)
+
+    def draw(self, surface):
+        """Zeichnet das Menü auf die Oberfläche"""
+        self.menu_system.draw(surface)
+
+    def handle_event(self, event):
+        """Verarbeitet Ereignisse und gibt sie an das Menü-System weiter"""
+        return self.menu_system.handle_event(event)
 
 
 class MenuSystem:
@@ -31,8 +50,9 @@ class MenuSystem:
 
         # Game state variables
         self.start_effect_timer = 0
-        self.start_effect_duration = 5000  # 5 seconds
+        self.start_effect_duration = 800  # Verkürzt auf 0,8 Sekunden (vorher 5 Sekunden)
         self.darkness_overlay = 0
+        self.skip_horror_effect = True  # Optional: Horror-Effekt komplett überspringen
 
         # Player variables (for gameplay demo)
         self.player_x = screen_width // 2
@@ -62,7 +82,27 @@ class MenuSystem:
     def _load_background(self):
         """Load and prepare background image"""
         try:
-            original_image = pygame.image.load('../assets/images/ui/background.png')
+            # Versuche verschiedene Pfade für das Hintergrundbild
+            possible_paths = [
+                'assets/images/ui/background.png',  # Relativer Pfad vom Projektroot
+                '../assets/images/ui/background.png',  # Relativer Pfad vom Modulordner
+                'pacman_game/assets/images/ui/background.png'  # Vollständiger Pfad
+            ]
+
+            original_image = None
+            for path in possible_paths:
+                try:
+                    print(f"Versuche Hintergrundbild zu laden von: {path}")
+                    original_image = pygame.image.load(path)
+                    print(f"Hintergrundbild erfolgreich geladen von: {path}")
+                    break
+                except (pygame.error, FileNotFoundError) as e:
+                    print(f"Konnte Hintergrundbild nicht laden von {path}: {e}")
+                    continue
+
+            if original_image is None:
+                raise FileNotFoundError("Konnte Hintergrundbild unter keinem der Pfade finden")
+
             img_width, img_height = original_image.get_size()
             target_ratio = self.screen_width / self.screen_height
             current_ratio = img_width / img_height
@@ -82,11 +122,27 @@ class MenuSystem:
             self.has_background_image = True
             print("Background image loaded successfully!")
         except Exception as e:
-            # Fallback: dark purple background
+            # Fallback: Erstelle einen schöneren Hintergrund als Alternative
             self.background_image = pygame.Surface((self.screen_width, self.screen_height))
-            self.background_image.fill(pygame.Color('#1a0d2e'))
+
+            # Erstelle einen Farbverlauf von dunkelblau zu schwarz
+            for y in range(self.screen_height):
+                # Berechne einen Farbverlauf basierend auf der y-Position
+                color_value = max(0, int(40 - (y / self.screen_height * 40)))
+                gradient_color = (0, color_value, color_value * 2)
+                pygame.draw.line(self.background_image, gradient_color, (0, y), (self.screen_width, y))
+
+            # Füge ein paar "Sterne" hinzu für einen Weltraum-Effekt
+            for _ in range(100):
+                star_x = random.randint(0, self.screen_width)
+                star_y = random.randint(0, self.screen_height)
+                star_size = random.randint(1, 3)
+                brightness = random.randint(150, 255)
+                pygame.draw.circle(self.background_image, (brightness, brightness, brightness), 
+                                  (star_x, star_y), star_size)
+
             self.has_background_image = False
-            print(f"Background image not found, using fallback: {e}")
+            print(f"Hintergrundbild nicht gefunden, verwende generierte Alternative: {e}")
 
     def _load_sounds(self):
         """Load all sound effects and music"""
@@ -185,11 +241,20 @@ class MenuSystem:
             if self.current_state == self.MENU:
                 if self.start_button_rect.collidepoint(mouse_pos):
                     self._play_sound('menu_click')
-                    self._play_sound('horror_start')
-                    self.current_state = self.HORROR_EFFECT
-                    self.start_effect_timer = current_time
-                    pygame.mixer.music.stop()
-                    print('Starting horror effect...')
+
+                    if self.skip_horror_effect:
+                        # Überspringe den Horror-Effekt und starte das Spiel sofort
+                        self.current_state = self.GAMEPLAY
+                        pygame.mixer.music.stop()
+                        print('Skipping horror effect, starting game directly...')
+                        return 'start_game'
+                    else:
+                        # Horror-Effekt wie vorher starten
+                        self._play_sound('horror_start')
+                        self.current_state = self.HORROR_EFFECT
+                        self.start_effect_timer = current_time
+                        pygame.mixer.music.stop()
+                        print('Starting horror effect...')
 
                 elif self.exit_button_rect.collidepoint(mouse_pos):
                     self._play_sound('menu_click')
@@ -237,9 +302,11 @@ class MenuSystem:
             elapsed_time = current_time - self.start_effect_timer
 
             if elapsed_time < self.start_effect_duration:
+                # Schnellerer Fortschritt für den Horror-Effekt
                 progress = elapsed_time / self.start_effect_duration
                 self.darkness_overlay = int(255 * progress)
             else:
+                # Übergang zum Spiel
                 self.current_state = self.GAMEPLAY
                 self.darkness_overlay = 0
                 print("🎮 Horror effect complete - ready for gameplay!")
@@ -301,6 +368,16 @@ class MenuSystem:
 
     def _draw_button(self, surface, text: str, rect: pygame.Rect, hovered: bool, hover_color: str):
         """Draw a button with hover effect"""
+        # Zeichne Button-Hintergrund
+        button_bg = pygame.Surface((rect.width, rect.height))
+        button_bg.set_alpha(150)
+        button_bg.fill(pygame.Color('#333333'))
+        surface.blit(button_bg, rect)
+
+        # Zeichne Button-Rahmen
+        pygame.draw.rect(surface, pygame.Color('#888888'), rect, 2)
+
+        # Zeichne Button-Text
         color = pygame.Color(hover_color) if hovered else pygame.Color('#FFFFFF')
         text_surface = self.button_font.render(text, True, color)
         text_rect = text_surface.get_rect(center=rect.center)

@@ -90,6 +90,15 @@ class Game:
     def handle_event(self, event):
         """Handle input events"""
         if self.state == MENU:
+            # Ereignisse an das Menüsystem weiterleiten
+            menu_result = self.menu.handle_event(event)
+            if menu_result == 'start_game':
+                self.start_game()
+                return True
+            elif menu_result == 'quit':
+                return False
+
+            # Für Tastatureingaben (als Fallback)
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     self.start_game()
@@ -145,6 +154,12 @@ class Game:
         self.start_game()    
     def update(self):
         """Update game logic"""
+        # Prüfe auf Statusänderungen im Menüsystem, wenn wir im Menü sind
+        if self.state == MENU:
+            menu_result = self.menu.menu_system.update()
+            if menu_result == 'start_game':
+                self.start_game()
+
         if self.state == PLAYING:
             # Update Pac-Man
             self.pacman.update(self.maze)

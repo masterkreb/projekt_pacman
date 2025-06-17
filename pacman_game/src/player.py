@@ -37,7 +37,7 @@ class Pacman:
         # Animation
         self.animation_frame = 0
         self.animation_speed = 0.2
-        
+
         # Bewegungstasten wie im Original
         self.move_keys = {
             'up': [pygame.K_w, pygame.K_UP],
@@ -45,7 +45,24 @@ class Pacman:
             'left': [pygame.K_a, pygame.K_LEFT],
             'right': [pygame.K_d, pygame.K_RIGHT]
         }
-        
+
+        # Sprite laden
+        try:
+            self.sprite_sheet = pygame.image.load(
+                'assets/images/maze/Teil_017_Pacman_Tileset.png'
+            ).convert_alpha()
+            # Frame-Größe automatisch bestimmen (4 Frames horizontal, 4 Zeilen für Richtungen)
+            sheet_width, sheet_height = self.sprite_sheet.get_size()
+            self.frame_count = 4
+            self.direction_count = 4
+            self.frame_width = sheet_width // self.frame_count
+            self.frame_height = sheet_height // self.direction_count
+            self.sprite_loaded = True
+        except (pygame.error, FileNotFoundError) as e:
+            print(f"Konnte Pacman-Sprite nicht laden: {e}")
+            self.sprite_sheet = None
+            self.sprite_loaded = False
+
         # Sound-System aus dem ursprünglichen Code
         try:
             self.wakawaka_sound = pygame.mixer.Sound("assets/sounds/effects/wakawaka.wav")
@@ -57,11 +74,11 @@ class Pacman:
             print(f"Could not load wakawaka.wav: {e}")
             self.wakawaka_sound = None
             self.sound_loaded = False
-        
+
         self.sound_enabled = True
         self.is_moving = False
         self.last_moving_state = False
-    
+
     def get_pressed_direction(self, keys):
         """Checkt welche Richtungstaste gedrückt wird - aus dem Original"""
         for direction, key_list in self.move_keys.items():
@@ -69,7 +86,7 @@ class Pacman:
                 if keys[key]:
                     return direction
         return None
-    
+
     def set_velocity_from_direction(self, direction):
         """Setzt die Geschwindigkeit basierend auf Richtung - originales Pacman Movement"""
         if direction == 'up':
@@ -84,7 +101,7 @@ class Pacman:
         elif direction == 'right':
             self.velocity_x, self.velocity_y = self.speed, 0
             self.current_direction = 'right'
-    
+
     def set_direction(self, direction):
         """Set the next direction for Pac-Man - kompatibel mit neuem System"""
         if direction == UP:
@@ -96,7 +113,7 @@ class Pacman:
         elif direction == RIGHT:
             self.next_direction = 'right'
         elif direction == STOP:
-            self.next_direction = None    
+            self.next_direction = None
     def update(self, maze):
         """Update Pac-Man's position and state - Strikt Node-basierte Bewegung"""
         # Grid-Position aktualisieren
@@ -260,9 +277,13 @@ class Pacman:
             self.wakawaka_channel.stop()
 
     def draw(self, screen):
-        """Zeichnet Pacman auf den Bildschirm"""
-        # Vereinfachte Version: Zeichne einen gelben Kreis
-        pygame.draw.circle(screen, YELLOW, (int(self.x + self.size / 2), int(self.y + self.size / 2)), int(self.size / 2))
+        """Zeichnet Pacman als einfachen gelben Ball (temporär)"""
+        # Berechne den Mittelpunkt
+        center_x = int(self.x + self.size / 2)
+        center_y = int(self.y + self.size / 2)
+
+        # Zeichne den gelben Ball
+        pygame.draw.circle(screen, YELLOW, (center_x, center_y), int(self.size / 2))
 
     def reset(self, start_x=None, start_y=None):
         """Setzt Pacman auf die Startposition zurück"""

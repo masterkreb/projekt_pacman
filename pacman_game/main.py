@@ -14,11 +14,11 @@ def main():
     # Initialize Pygame
     pygame.init()
     pygame.mixer.init()
-    
+
     # Set up the display
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Pac-Man Game")
-    
+
     # Try to set icon if available
     try:
         icon = pygame.image.load("assets/images/ui/icon.png")
@@ -26,13 +26,13 @@ def main():
         print("Game icon loaded successfully!")
     except (pygame.error, FileNotFoundError) as e:
         print(f"Could not load game icon: {e}")
-    
+
     # Create clock for FPS control
     clock = pygame.time.Clock()
-    
+
     # Create game instance
     game = Game(screen)
-    
+
     # Main game loop
     running = True
     while running:
@@ -42,20 +42,20 @@ def main():
                 running = False
             else:
                 game.handle_event(event)
-        
+
         # Update game state
         game.update()
-        
+
         # Draw everything
         game.draw()
-        
-        # Update display
+
+        # Update the display
         pygame.display.flip()
-        
-        # Control frame rate
+
+        # Cap the frame rate
         clock.tick(FPS)
-    
-    # Quit
+
+    # Quit Pygame and exit
     pygame.quit()
     sys.exit()
 
