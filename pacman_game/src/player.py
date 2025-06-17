@@ -255,7 +255,6 @@ class Pacman:
 
     def draw(self, screen):
         """Zeichnet Pacman auf den Bildschirm"""
-        # TODO: Implementiere die Animation mit Sprite-Sheets
         # Vereinfachte Version: Zeichne einen gelben Kreis
         pygame.draw.circle(screen, YELLOW, (int(self.x + self.size / 2), int(self.y + self.size / 2)), int(self.size / 2))
 
