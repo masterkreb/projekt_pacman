@@ -127,7 +127,12 @@ class Game:
         self.state = PLAYING
         self.score = 0
         self.lives = 3
-        self.pacman.reset(11, 15)  # Gleiche Startposition
+        # Pacman oben links positionieren (x=1, y=1 ist der erste freie Platz in der Ecke)
+        self.pacman.reset(1, 1)
+
+        # Initialisiere Pacman mit den Nodes für die Bewegung
+        self.pacman.initialize_nodes(self.maze.node_map)
+
         self.pellet_manager.reset()
         ghost_start_x = self.maze.width // 2
         ghost_start_y = self.maze.height // 2
@@ -175,8 +180,8 @@ class Game:
                         if self.lives <= 0:
                             self.state = GAME_OVER
                         else:
-                            self.pacman.reset(11, 15)
-            
+                            self.pacman.reset(1, 1)  # Auf die korrekte Startposition zurücksetzen
+
             # Check victory condition
             if self.pellet_manager.all_collected():
                 self.state = VICTORY
@@ -193,6 +198,9 @@ class Game:
             # Draw maze
             self.maze.draw(self.screen)
             
+            # Debug: Nodes anzeigen (auf True setzen, um Nodes zu sehen)
+            self.maze.draw_nodes(self.screen, show_nodes=True)
+
             # Draw pellets
             self.pellet_manager.draw(self.screen)
             

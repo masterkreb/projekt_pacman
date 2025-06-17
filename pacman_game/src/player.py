@@ -6,20 +6,26 @@ Handles Pac-Man character movement, animation, and behavior
 import pygame
 import math
 from src.constants import *
+from src.nodes import find_nearest_node, find_node_by_grid
 
 class Pacman:
     def __init__(self, start_x, start_y):
         self.start_x = start_x
         self.start_y = start_y
         
-        # Pixel-Position (wie im ursprünglichen Code)
-        self.x = 270  # Original Startposition
-        self.y = 360  # Original Startposition
-        
+        # Pixel-Position - angepasst auf die übergebenen Startkoordinaten
+        self.x = start_x * GRID_SIZE
+        self.y = start_y * GRID_SIZE
+
         # Grid-Position
         self.grid_x = self.x // GRID_SIZE
         self.grid_y = self.y // GRID_SIZE
         
+        # Node-basierte Bewegung (analog zum ursprünglichen Code)
+        self.pos = None  # Aktueller Node
+        self.target = None  # Ziel-Node
+        self.all_nodes = []
+
         # Bewegungssystem aus dem ursprünglichen Code
         self.current_direction = None
         self.next_direction = None
@@ -92,170 +98,223 @@ class Pacman:
         elif direction == STOP:
             self.next_direction = None    
     def update(self, maze):
-        """Update Pac-Man's position and state - überarbeitete Version"""
-        # Handle keyboard input
-        keys = pygame.key.get_pressed()
-        pressed_direction = self.get_pressed_direction(keys)
-        
-        # Set next direction if key is pressed
-        if pressed_direction:
-            self.next_direction = pressed_direction
-        
-        # Try to change direction if next_direction is set
-        if self.next_direction and self.can_move_direction(maze, self.next_direction):
-            self.set_velocity_from_direction(self.next_direction)
-            self.next_direction = None
-        
-        # Continue moving in current direction
-        if self.current_direction and self.can_move_direction(maze, self.current_direction):
-            # Move Pac-Man
-            self.x += self.velocity_x
-            self.y += self.velocity_y
-            
-            # Update grid position
-            self.grid_x = self.x // GRID_SIZE
-            self.grid_y = self.y // GRID_SIZE
-        else:
-            # Stop if can't move
-            self.velocity_x = 0
-            self.velocity_y = 0
-            self.current_direction = None
-        
-        # Handle screen wrapping (tunnel effect)
-        if self.x < -GRID_SIZE:
-            self.x = SCREEN_WIDTH
-        elif self.x > SCREEN_WIDTH:
-            self.x = -GRID_SIZE
-        
-        # Update animation
-        self.animation_frame += self.animation_speed
-        if self.animation_frame >= 4:
-            self.animation_frame = 0
-        
-        # Sound-Management aus dem ursprünglichen Code
-        current_moving = (self.velocity_x != 0 or self.velocity_y != 0)
-        
-        if self.sound_enabled and self.sound_loaded:
-            if current_moving and not self.last_moving_state:
-                # Start sound when beginning to move
-                if self.wakawaka_channel is None or not self.wakawaka_channel.get_busy():
-                    self.wakawaka_channel = self.wakawaka_sound.play(-1)  # Loop indefinitely
-            elif not current_moving and self.last_moving_state:
-                # Stop sound when stopping
-                if self.wakawaka_channel and self.wakawaka_channel.get_busy():
-                    self.wakawaka_channel.stop()
-                    self.wakawaka_channel = None
-        
-        self.last_moving_state = current_moving
-        self.is_moving = current_moving
-    
-    def can_move_direction(self, maze, direction):
-        """Check if Pac-Man can move in the given direction"""
-        # Calculate next position based on direction
-        test_x = self.x
-        test_y = self.y
-        
-        if direction == 'up':
-            test_y -= self.speed
-        elif direction == 'down':
-            test_y += self.speed
-        elif direction == 'left':
-            test_x -= self.speed
-        elif direction == 'right':
-            test_x += self.speed
-        else:
-            return True
-        
-        # Convert to grid position
-        grid_x = test_x // GRID_SIZE
-        grid_y = test_y // GRID_SIZE
-        
-        # Check bounds
-        if (grid_x < 0 or grid_x >= maze.width or 
-            grid_y < 0 or grid_y >= maze.height):
-            return False
-        
-        # Check for walls
-        return not maze.is_wall(grid_x, grid_y)
-    
-    def draw(self, screen):
-        """Draw Pac-Man to the screen"""
-        # Calculate drawing position (center the sprite)
-        draw_x = self.x + GRID_SIZE // 2
-        draw_y = self.y + GRID_SIZE // 2
-        
-        # Simple animated Pac-Man using circles
-        mouth_angle = int(self.animation_frame) * 15  # Opening/closing mouth
-        
-        # Determine rotation based on direction
-        rotation = 0
-        if self.direction == RIGHT:
-            rotation = 0
-        elif self.direction == LEFT:
-            rotation = 180
-        elif self.direction == UP:
-            rotation = 270
-        elif self.direction == DOWN:
-            rotation = 90
-        
-        # Draw Pac-Man as a circle with a mouth
-        radius = self.size // 2
-        
-        if mouth_angle > 0:
-            # Draw Pac-Man with mouth open
-            start_angle = math.radians(rotation + mouth_angle)
-            end_angle = math.radians(rotation + 360 - mouth_angle)
-            
-            # Create points for the Pac-Man shape
-            points = [(draw_x, draw_y)]
-            
-            # Add arc points
-            for angle in range(int(math.degrees(start_angle)), int(math.degrees(end_angle)), 5):
-                x = draw_x + radius * math.cos(math.radians(angle))
-                y = draw_y + radius * math.sin(math.radians(angle))
-                points.append((x, y))
-            
-            points.append((draw_x, draw_y))
-            
-            if len(points) > 2:
-                pygame.draw.polygon(screen, YELLOW, points)
-        else:
-            # Draw closed mouth (full circle)
-            pygame.draw.circle(screen, YELLOW, (int(draw_x), int(draw_y)), radius)
-        
-        # Draw eye
-        eye_x = draw_x + radius // 3 * math.cos(math.radians(rotation - 45))
-        eye_y = draw_y + radius // 3 * math.sin(math.radians(rotation - 45))
-        pygame.draw.circle(screen, BLACK, (int(eye_x), int(eye_y)), 2)
-    
-    def get_position(self):
-        """Get current grid position"""
-        return (self.grid_x, self.grid_y)
-    
-    def get_center(self):
-        """Get center pixel coordinates"""
-        return (self.x + GRID_SIZE // 2, self.y + GRID_SIZE // 2)
-    
-    def collides_with(self, other):
-        """Check collision with another object"""
-        distance = math.sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
-        return distance < (self.size + other.size) // 2    
-    def reset(self, start_x, start_y):
-        """Reset Pac-Man to starting position"""
-        self.start_x = start_x
-        self.start_y = start_y
-        
-        # Reset to original starting position (pixel coordinates)
-        self.x = 270  # Original Startposition
-        self.y = 360  # Original Startposition
-        
-        # Update grid position
+        """Update Pac-Man's position and state - Verbesserte Node-basierte Bewegung"""
+        # Grid-Position aktualisieren
         self.grid_x = self.x // GRID_SIZE
         self.grid_y = self.y // GRID_SIZE
-        
-        # Reset movement
-        self.current_direction = None
-        self.next_direction = None
+
+        # Aktuellen Node ermitteln, falls noch nicht gesetzt
+        if self.pos is None and maze.node_map:
+            self.pos = find_nearest_node(maze.node_map, self.grid_x, self.grid_y)
+
+        # Zielpunkt erreicht?
+        if self.target and self.reached_target():
+            self.pos = self.target
+            self.target = None
+
+            # Tunnel-Check: Prüfe, ob wir an einem Tunneleingang sind
+            tunnel_exit = None
+            if self.current_direction == 'left':
+                tunnel_exit = maze.get_tunnel_exit(self.grid_x, self.grid_y, -1, 0)
+            elif self.current_direction == 'right':
+                tunnel_exit = maze.get_tunnel_exit(self.grid_x, self.grid_y, 1, 0)
+
+            if tunnel_exit:
+                # Teleportiere Pacman zum Tunnelausgang
+                tx, ty = tunnel_exit
+                self.x = tx * GRID_SIZE
+                self.y = ty * GRID_SIZE
+                self.grid_x = tx
+                self.grid_y = ty
+                self.pos = find_node_by_grid(maze.node_map, tx, ty)
+
+            # Richtungswechsel-Logik: Priorisiere die nächste Richtung
+            changed_direction = False
+            if self.next_direction:
+                neighbor = self.pos.get_neighbor_in_direction(self.next_direction)
+                if neighbor:
+                    self.target = neighbor
+                    self.set_velocity_from_direction(self.next_direction)
+                    changed_direction = True
+
+            # Wenn keine Richtungsänderung erfolgt ist, versuche in der aktuellen Richtung weiterzugehen
+            if not changed_direction and self.current_direction:
+                neighbor = self.pos.get_neighbor_in_direction(self.current_direction)
+                if neighbor:
+                    self.target = neighbor
+                    self.set_velocity_from_direction(self.current_direction)
+
+        # Wenn wir an einer Kreuzung sind aber keine Richtung gesetzt haben, Richtungswechsel erlauben
+        elif self.pos and not self.target:
+            # Neue Richtungswechsel-Logik: Reagiere schneller auf Benutzereingaben
+            if self.next_direction:
+                neighbor = self.pos.get_neighbor_in_direction(self.next_direction)
+                if neighbor:
+                    self.target = neighbor
+                    self.set_velocity_from_direction(self.next_direction)
+                    self.current_direction = self.next_direction
+
+            # Wenn keine neue Richtung gesetzt oder nicht möglich, behalte aktuelle Richtung bei
+            elif self.current_direction:
+                neighbor = self.pos.get_neighbor_in_direction(self.current_direction)
+                if neighbor:
+                    self.target = neighbor
+
+        # Bewegungszustand aktualisieren
+        if self.target:
+            self.is_moving = True
+        else:
+            self.velocity_x = 0
+            self.velocity_y = 0
+            self.is_moving = False
+
+        # Position aktualisieren (wird nur einmal pro Frame gemacht)
+        self.x += self.velocity_x
+        self.y += self.velocity_y
+
+        # Sound-Steuerung - spiele Wakawaka nur, wenn Bewegung beginnt
+        if self.is_moving and not self.last_moving_state:
+            self.play_wakawaka()
+        elif not self.is_moving and self.last_moving_state:
+            self.stop_wakawaka()
+
+        self.last_moving_state = self.is_moving
+
+        # Animation aktualisieren
+        self.update_animation()
+
+    def reached_target(self):
+        """Prüft, ob der Ziel-Node erreicht wurde"""
+        if not self.target:
+            return False
+
+        # Berechne die Distanz zum Ziel
+        target_x = self.target.px
+        target_y = self.target.py
+
+        # Berechne den Mittelpunkt von Pacman
+        center_x = self.x + self.size / 2
+        center_y = self.y + self.size / 2
+
+        # Prüfe, ob wir nahe genug am Ziel sind (5 Pixel Toleranz)
+        distance = math.sqrt((center_x - target_x) ** 2 + (center_y - target_y) ** 2)
+        return distance < 5
+
+    def move_towards_target(self):
+        """Bewegt Pacman in Richtung des Ziel-Nodes"""
+        if not self.target:
+            return
+
+        # Berechne den Mittelpunkt von Pacman
+        center_x = self.x + self.size / 2
+        center_y = self.y + self.size / 2
+
+        # Berechne die Richtung zum Ziel
+        target_x = self.target.px
+        target_y = self.target.py
+
+        # Setze die Geschwindigkeit basierend auf der aktuellen Richtung
+        # Wir verwenden die voreingestellte Geschwindigkeit, nicht die genaue Richtung
+        # Dies verhindert diagonale Bewegungen
+        if self.current_direction == 'up':
+            self.velocity_x, self.velocity_y = 0, -self.speed
+        elif self.current_direction == 'down':
+            self.velocity_x, self.velocity_y = 0, self.speed
+        elif self.current_direction == 'left':
+            self.velocity_x, self.velocity_y = -self.speed, 0
+        elif self.current_direction == 'right':
+            self.velocity_x, self.velocity_y = self.speed, 0
+
+        # Bewegung ausführen
+        self.x += self.velocity_x
+        self.y += self.velocity_y
+
+        # Aktualisiere die Grid-Position
+        self.grid_x = int(self.x // GRID_SIZE)
+        self.grid_y = int(self.y // GRID_SIZE)
+
+    def update_animation(self):
+        """Aktualisiert den Animationsframe"""
+        if self.is_moving:
+            self.animation_frame += self.animation_speed
+            if self.animation_frame >= 4:  # 4 Frames in der Animation
+                self.animation_frame = 0
+
+    def play_wakawaka(self):
+        """Spielt den Wakawaka-Sound"""
+        if self.sound_loaded and self.sound_enabled:
+            if not self.wakawaka_channel or not self.wakawaka_channel.get_busy():
+                self.wakawaka_channel = pygame.mixer.find_channel(True)
+                if self.wakawaka_channel:
+                    self.wakawaka_channel.play(self.wakawaka_sound, loops=-1)  # Loop infinitely
+
+    def stop_wakawaka(self):
+        """Stoppt den Wakawaka-Sound"""
+        if self.wakawaka_channel and self.wakawaka_channel.get_busy():
+            self.wakawaka_channel.stop()
+
+    def draw(self, screen):
+        """Zeichnet Pacman auf den Bildschirm"""
+        # TODO: Implementiere die Animation mit Sprite-Sheets
+        # Vereinfachte Version: Zeichne einen gelben Kreis
+        pygame.draw.circle(screen, YELLOW, (int(self.x + self.size / 2), int(self.y + self.size / 2)), int(self.size / 2))
+
+    def reset(self, start_x=None, start_y=None):
+        """Setzt Pacman auf die Startposition zurück"""
+        # Aktualisiere die Startposition, wenn neue Werte übergeben werden
+        if start_x is not None:
+            self.start_x = start_x
+        if start_y is not None:
+            self.start_y = start_y
+
+        self.x = self.start_x * GRID_SIZE
+        self.y = self.start_y * GRID_SIZE
+        self.grid_x = self.x // GRID_SIZE
+        self.grid_y = self.y // GRID_SIZE
         self.velocity_x = 0
         self.velocity_y = 0
-        self.animation_frame = 0
+        self.current_direction = None
+        self.next_direction = None
+        self.pos = None
+        self.target = None
+        self.is_moving = False
+        self.stop_wakawaka()
+
+    def initialize_nodes(self, nodes):
+        """Setzt die Node-Liste und initialisiert Pacman auf dem nächsten Node"""
+        self.all_nodes = nodes
+        self.pos = find_nearest_node(nodes, self.grid_x, self.grid_y)
+        # Setze Pacman genau auf die Position des Nodes für sauberen Start
+        if self.pos:
+            self.x = self.pos.grid_x * GRID_SIZE
+            self.y = self.pos.grid_y * GRID_SIZE
+
+    def get_position(self):
+        """Gibt die aktuelle Position von Pacman zurück"""
+        # Berechne den Mittelpunkt von Pacman für genauere Kollisionserkennung
+        center_x = self.x + self.size / 2
+        center_y = self.y + self.size / 2
+        return (center_x, center_y)
+
+    def collides_with(self, other):
+        """Prüft, ob Pacman mit einem anderen Spielobjekt kollidiert"""
+        # Berechne den Mittelpunkt von Pacman
+        pacman_x, pacman_y = self.get_position()
+
+        # Prüfe, ob das andere Objekt eine get_position Methode hat
+        if hasattr(other, 'get_position'):
+            other_x, other_y = other.get_position()
+        else:
+            # Fallback, falls das andere Objekt keine get_position Methode hat
+            # Wir gehen davon aus, dass es x, y und size Attribute hat
+            other_x = other.x + other.size / 2
+            other_y = other.y + other.size / 2
+
+        # Berechne die Distanz zwischen den Mittelpunkten
+        distance = math.sqrt((pacman_x - other_x) ** 2 + (pacman_y - other_y) ** 2)
+
+        # Prüfe, ob die Distanz kleiner ist als die Summe der Radien
+        # (Bei Pacman und Geistern verwenden wir size/2 als Radius)
+        collision_distance = (self.size + getattr(other, 'size', self.size)) / 2
+
+        return distance < collision_distance

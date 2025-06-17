@@ -60,18 +60,29 @@ class Ghost:
             self.animation_frame = 0
     
     def set_target(self, pacman):
-        """Set target coordinates based on ghost mode and personality"""
+        """Set target position based on ghost behavior"""
         if self.mode == SCATTER:
-            # Each ghost has a different corner to target
+            # Each ghost has a fixed target corner in scatter mode
             corners = {
-                "blinky": (MAZE_WIDTH - 1, 0),
-                "pinky": (0, 0),
-                "inky": (MAZE_WIDTH - 1, MAZE_HEIGHT - 1),
-                "clyde": (0, MAZE_HEIGHT - 1)
+                "blinky": (MAZE_WIDTH - 1, 0),          # Top-right
+                "pinky": (0, 0),                        # Top-left
+                "inky": (MAZE_WIDTH - 1, MAZE_HEIGHT - 1),  # Bottom-right
+                "clyde": (0, MAZE_HEIGHT - 1)           # Bottom-left
             }
             self.target_x, self.target_y = corners.get(self.name, (0, 0))
         
         elif self.mode == CHASE:
+            # Konvertiere current_direction String zu Richtungsvektoren
+            direction_vectors = {
+                'up': (0, -1),
+                'down': (0, 1),
+                'left': (-1, 0),
+                'right': (1, 0),
+                None: (0, 0)  # Falls keine Richtung gesetzt ist
+            }
+            # Verwende current_direction anstelle von direction
+            direction_vector = direction_vectors.get(pacman.current_direction, (0, 0))
+
             # Each ghost has different targeting behavior
             if self.name == "blinky":
                 # Target Pac-Man directly
@@ -79,8 +90,8 @@ class Ghost:
             
             elif self.name == "pinky":
                 # Target 4 spaces ahead of Pac-Man
-                target_x = pacman.grid_x + pacman.direction[0] * 4
-                target_y = pacman.grid_y + pacman.direction[1] * 4
+                target_x = pacman.grid_x + direction_vector[0] * 4
+                target_y = pacman.grid_y + direction_vector[1] * 4
                 self.target_x = max(0, min(MAZE_WIDTH - 1, target_x))
                 self.target_y = max(0, min(MAZE_HEIGHT - 1, target_y))
             

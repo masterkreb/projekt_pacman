@@ -3,16 +3,20 @@ Game Constants
 All game-wide constants and configuration values
 """
 
-# Screen dimensions - aus dem ursprünglichen Projekt
-SCREEN_WIDTH = 540
-SCREEN_HEIGHT = 720
+# Exakte Layout-Dimensionen aus dem Spielfeld
+LAYOUT_WIDTH = 28  # Spalten im Spielfeld
+LAYOUT_HEIGHT = 31  # Zeilen im Spielfeld
+TILE = 24  # Tile-Größe aus dem ursprünglichen spielfeld.py
+
+# Screen dimensions - angepasst an das Spielfeld
+SCREEN_WIDTH = LAYOUT_WIDTH * TILE  # 28 * 24 = 672
+SCREEN_HEIGHT = LAYOUT_HEIGHT * TILE  # 31 * 24 = 744
 FPS = 60
 
-# Grid settings - passt zu dem originalen Spielfeld
-TILE = 24  # Tile-Größe aus dem ursprünglichen spielfeld.py
+# Grid settings
 GRID_SIZE = TILE
-MAZE_WIDTH = SCREEN_WIDTH // GRID_SIZE
-MAZE_HEIGHT = SCREEN_HEIGHT // GRID_SIZE
+MAZE_WIDTH = LAYOUT_WIDTH
+MAZE_HEIGHT = LAYOUT_HEIGHT
 
 # Colors (RGB)
 BLACK = (0, 0, 0)
@@ -33,6 +37,12 @@ PACMAN_SIZE = 20  # Originalgröße
 GHOST_SPEED = 1.5
 GHOST_SIZE = 16
 
+# Ghost modes
+SCATTER = "scatter"
+CHASE = "chase"
+FRIGHTENED = "frightened"
+EATEN = "eaten"
+
 # Pellet settings
 SMALL_PELLET_SIZE = 2
 LARGE_PELLET_SIZE = 8
@@ -52,9 +62,3 @@ DOWN = (0, 1)
 LEFT = (-1, 0)
 RIGHT = (1, 0)
 STOP = (0, 0)
-
-# Ghost modes
-SCATTER = "scatter"
-CHASE = "chase"
-FRIGHTENED = "frightened"
-EATEN = "eaten"
