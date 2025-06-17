@@ -4,7 +4,7 @@ Handles pellet placement, collection, and scoring
 """
 
 import pygame
-from src.constants import *
+from .constants import *
 
 class Pellet:
     def __init__(self, x, y, is_power_pellet=False):

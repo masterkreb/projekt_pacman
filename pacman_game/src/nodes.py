@@ -3,7 +3,7 @@ Node System für erweiterte Pathfinding
 Basiert auf dem ursprünglichen node.py Code und spielfeld.py
 """
 
-from src.constants import GRID_SIZE
+from .constants import GRID_SIZE
 
 class Node:
     def __init__(self, grid_x, grid_y):

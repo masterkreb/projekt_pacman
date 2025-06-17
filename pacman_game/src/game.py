@@ -4,12 +4,12 @@ Handles game logic, state management, and coordination between components
 """
 
 import pygame
-from src.constants import *
-from src.player import Pacman
-from src.ghost import Ghost
-from src.maze import Maze
-from src.pellets import PelletManager
-from src.menu import Menu
+from .constants import *
+from .player import Pacman
+from .ghost import Ghost
+from .maze import Maze
+from .pellets import PelletManager
+from .menu import Menu
 
 class Game:
     def __init__(self, screen):
@@ -100,15 +100,16 @@ class Game:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     self.state = PAUSED
-                elif event.key == pygame.K_UP:
+                # Node-basierte Steuerung mit WASD oder Pfeiltasten
+                elif event.key == pygame.K_w or event.key == pygame.K_UP:
                     self.pacman.set_direction(UP)
-                elif event.key == pygame.K_DOWN:
+                elif event.key == pygame.K_s or event.key == pygame.K_DOWN:
                     self.pacman.set_direction(DOWN)
-                elif event.key == pygame.K_LEFT:
+                elif event.key == pygame.K_a or event.key == pygame.K_LEFT:
                     self.pacman.set_direction(LEFT)
-                elif event.key == pygame.K_RIGHT:
+                elif event.key == pygame.K_d or event.key == pygame.K_RIGHT:
                     self.pacman.set_direction(RIGHT)
-        
+
         elif self.state == PAUSED:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:

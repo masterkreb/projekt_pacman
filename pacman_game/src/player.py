@@ -5,8 +5,8 @@ Handles Pac-Man character movement, animation, and behavior
 
 import pygame
 import math
-from src.constants import *
-from src.nodes import find_nearest_node, find_node_by_grid
+from .constants import *
+from .nodes import find_nearest_node, find_node_by_grid
 
 class Pacman:
     def __init__(self, start_x, start_y):
@@ -98,21 +98,38 @@ class Pacman:
         elif direction == STOP:
             self.next_direction = None    
     def update(self, maze):
-        """Update Pac-Man's position and state - Verbesserte Node-basierte Bewegung"""
+        """Update Pac-Man's position and state - Strikt Node-basierte Bewegung"""
         # Grid-Position aktualisieren
-        self.grid_x = self.x // GRID_SIZE
-        self.grid_y = self.y // GRID_SIZE
+        self.grid_x = int(self.x // GRID_SIZE)
+        self.grid_y = int(self.y // GRID_SIZE)
 
         # Aktuellen Node ermitteln, falls noch nicht gesetzt
         if self.pos is None and maze.node_map:
             self.pos = find_nearest_node(maze.node_map, self.grid_x, self.grid_y)
+            if self.pos:
+                # Setze Pacman genau auf die Position des Nodes
+                self.x = self.pos.grid_x * GRID_SIZE
+                self.y = self.pos.grid_y * GRID_SIZE
+                self.grid_x = self.pos.grid_x
+                self.grid_y = self.pos.grid_y
 
-        # Zielpunkt erreicht?
+        # Wenn wir einen Zielpunkt haben und ihn erreicht haben
         if self.target and self.reached_target():
+            # Wir sind am Ziel angekommen
             self.pos = self.target
             self.target = None
 
-            # Tunnel-Check: Prüfe, ob wir an einem Tunneleingang sind
+            # Setze die Position exakt auf den Node
+            self.x = self.pos.grid_x * GRID_SIZE
+            self.y = self.pos.grid_y * GRID_SIZE
+            self.grid_x = self.pos.grid_x
+            self.grid_y = self.pos.grid_y
+
+            # Stoppe die Bewegung
+            self.velocity_x = 0
+            self.velocity_y = 0
+
+            # Tunnel-Check
             tunnel_exit = None
             if self.current_direction == 'left':
                 tunnel_exit = maze.get_tunnel_exit(self.grid_x, self.grid_y, -1, 0)
@@ -128,51 +145,40 @@ class Pacman:
                 self.grid_y = ty
                 self.pos = find_node_by_grid(maze.node_map, tx, ty)
 
-            # Richtungswechsel-Logik: Priorisiere die nächste Richtung
-            changed_direction = False
+        # Wenn wir an einem Node sind aber kein Ziel haben
+        if self.pos and not self.target:
+            # Versuche, in die gewünschte Richtung zu gehen
             if self.next_direction:
-                neighbor = self.pos.get_neighbor_in_direction(self.next_direction)
-                if neighbor:
-                    self.target = neighbor
-                    self.set_velocity_from_direction(self.next_direction)
-                    changed_direction = True
-
-            # Wenn keine Richtungsänderung erfolgt ist, versuche in der aktuellen Richtung weiterzugehen
-            if not changed_direction and self.current_direction:
-                neighbor = self.pos.get_neighbor_in_direction(self.current_direction)
-                if neighbor:
-                    self.target = neighbor
-                    self.set_velocity_from_direction(self.current_direction)
-
-        # Wenn wir an einer Kreuzung sind aber keine Richtung gesetzt haben, Richtungswechsel erlauben
-        elif self.pos and not self.target:
-            # Neue Richtungswechsel-Logik: Reagiere schneller auf Benutzereingaben
-            if self.next_direction:
-                neighbor = self.pos.get_neighbor_in_direction(self.next_direction)
-                if neighbor:
-                    self.target = neighbor
+                next_node = self.pos.get_neighbor_in_direction(self.next_direction)
+                if next_node:
+                    self.target = next_node
                     self.set_velocity_from_direction(self.next_direction)
                     self.current_direction = self.next_direction
-
-            # Wenn keine neue Richtung gesetzt oder nicht möglich, behalte aktuelle Richtung bei
+                else:
+                    # Wenn nicht möglich, versuche in aktueller Richtung weiterzugehen
+                    if self.current_direction:
+                        next_node = self.pos.get_neighbor_in_direction(self.current_direction)
+                        if next_node:
+                            self.target = next_node
+                            self.set_velocity_from_direction(self.current_direction)
+            # Wenn keine neue Richtung gesetzt, versuche in aktueller weiterzugehen
             elif self.current_direction:
-                neighbor = self.pos.get_neighbor_in_direction(self.current_direction)
-                if neighbor:
-                    self.target = neighbor
+                next_node = self.pos.get_neighbor_in_direction(self.current_direction)
+                if next_node:
+                    self.target = next_node
+                    self.set_velocity_from_direction(self.current_direction)
 
-        # Bewegungszustand aktualisieren
+        # Wenn wir ein Ziel haben, bewege uns in diese Richtung
         if self.target:
+            self.x += self.velocity_x
+            self.y += self.velocity_y
             self.is_moving = True
         else:
             self.velocity_x = 0
             self.velocity_y = 0
             self.is_moving = False
 
-        # Position aktualisieren (wird nur einmal pro Frame gemacht)
-        self.x += self.velocity_x
-        self.y += self.velocity_y
-
-        # Sound-Steuerung - spiele Wakawaka nur, wenn Bewegung beginnt
+        # Sound-Steuerung
         if self.is_moving and not self.last_moving_state:
             self.play_wakawaka()
         elif not self.is_moving and self.last_moving_state:

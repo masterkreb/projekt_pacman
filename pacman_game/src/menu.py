@@ -4,7 +4,7 @@ Handles start menu, pause menu, and other UI screens
 """
 
 import pygame
-from src.constants import *
+from .constants import *
 
 class Menu:
     def __init__(self):

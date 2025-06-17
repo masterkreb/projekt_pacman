@@ -4,8 +4,8 @@ Handles the game maze/level layout, walls, and pathfinding
 """
 
 import pygame
-from src.constants import *
-from src.nodes import build_nodes_and_graph
+from .constants import *
+from .nodes import build_nodes_and_graph
 
 class Maze:
     def __init__(self):
@@ -190,7 +190,7 @@ class Maze:
                 return (self.LEFT_TUNNEL_X, self.TUNNEL_ROW)
         return None
 
-    def draw_nodes(self, screen, show_nodes=False):
+    def draw_nodes(self, screen, show_nodes=False, src=None):
         """Zeichnet die Nodes (Knotenpunkte) für Debug-Zwecke"""
         if show_nodes:
             # Lade Nodes nur einmal und speichere sie

@@ -6,7 +6,7 @@ Handles ghost AI, movement, and behavior patterns
 import pygame
 import random
 import math
-from src.constants import *
+from .constants import *
 
 class Ghost:
     def __init__(self, start_x, start_y, color, name):
