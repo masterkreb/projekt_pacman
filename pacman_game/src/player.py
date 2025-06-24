@@ -31,9 +31,15 @@ class Pacman:
         self.next_direction = None
         self.velocity_x = 0
         self.velocity_y = 0
-        self.speed = PACMAN_SPEED  # 3 wie im Original
+        self.speed = PACMAN_SPEED
+        self.base_speed = PACMAN_SPEED  # Basis-Geschwindigkeit speichern
         self.size = PACMAN_SIZE   # 20 wie im Original
-        
+
+        # Speed Boost System
+        self.speed_boost_active = False
+        self.speed_boost_timer = 0
+        self.speed_boost_duration = 360  # 6 Sekunden bei 60 FPS
+
         # Animation
         self.animation_frame = 0
         self.animation_speed = 0.2
@@ -104,8 +110,23 @@ class Pacman:
         elif direction == STOP:
             self.next_direction = None
 
+    def activate_speed_boost(self):
+        """Aktiviert den Speed Boost für 6 Sekunden"""
+        self.speed_boost_active = True
+        self.speed_boost_timer = self.speed_boost_duration
+        self.speed = PACMAN_SPEED_BOOST
+        print("Speed boost activated!")
+
     def update(self, maze):
         """Update Pac-Man's position and state - Strikt Node-basierte Bewegung"""
+        # Update speed boost
+        if self.speed_boost_active:
+            self.speed_boost_timer -= 1
+            if self.speed_boost_timer <= 0:
+                self.speed_boost_active = False
+                self.speed = self.base_speed
+                print("Speed boost ended")
+
         # Grid-Position aktualisieren
         self.grid_x = int(self.x // GRID_SIZE)
         self.grid_y = int(self.y // GRID_SIZE)
@@ -226,7 +247,9 @@ class Pacman:
         center_x = int(self.x + self.size / 2)
         center_y = int(self.y + self.size / 2)
 
-        # Zeichne Pac-Man immer gelb (kein Flimmern)
+        # Wähle Farbe basierend auf Speed Boost
+        color = CYAN if self.speed_boost_active else YELLOW
+
         if self.mouth_open and self.is_moving:
             # Mund offen - Pac-Man Form
             # Winkel basierend auf Richtung
@@ -277,13 +300,20 @@ class Pacman:
             points.append((center_x, center_y))
 
             if len(points) > 2:
-                pygame.draw.polygon(screen, YELLOW, points)
+                pygame.draw.polygon(screen, color, points)
                 # Zeichne Umriss für bessere Sichtbarkeit
-                pygame.draw.polygon(screen, YELLOW, points, 2)
+                pygame.draw.polygon(screen, color, points, 2)
         else:
             # Mund geschlossen - voller Kreis
-            pygame.draw.circle(screen, YELLOW, (center_x, center_y), int(self.size / 2))
-            pygame.draw.circle(screen, YELLOW, (center_x, center_y), int(self.size / 2), 2)
+            pygame.draw.circle(screen, color, (center_x, center_y), int(self.size / 2))
+            pygame.draw.circle(screen, color, (center_x, center_y), int(self.size / 2), 2)
+
+        # Speed boost visual effect
+        if self.speed_boost_active:
+            # Zeichne einen pulsierenden Ring um Pac-Man
+            pulse = int(math.sin(self.speed_boost_timer * 0.1) * 3)
+            pygame.draw.circle(screen, (150, 255, 255), (center_x, center_y),
+                             int(self.size / 2) + 5 + pulse, 1)
 
     def reset(self, start_x=None, start_y=None):
         """Setzt Pacman auf die Startposition zurück"""
@@ -307,6 +337,10 @@ class Pacman:
         self.is_eating = False
         self.animation_frame = 0
         self.mouth_open = True
+        # Reset speed boost
+        self.speed_boost_active = False
+        self.speed_boost_timer = 0
+        self.speed = self.base_speed
 
     def initialize_nodes(self, nodes):
         """Setzt die Node-Liste und initialisiert Pacman auf dem nächsten Node"""

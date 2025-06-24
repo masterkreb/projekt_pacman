@@ -153,9 +153,9 @@ class MenuSystem:
             menu_music_path = 'assets/sounds/effects/menu_music.mp3'
             if os.path.exists(menu_music_path):
                 pygame.mixer.music.load(menu_music_path)
-                pygame.mixer.music.set_volume(0.7)
+                pygame.mixer.music.set_volume(0.15)  # Drastisch reduziert auf 15%
                 pygame.mixer.music.play(-1)  # Loop unendlich
-                print("Menu music loaded and started!")
+                print("Menu music loaded and started at 15% volume!")
             else:
                 print(f"Menu music not found at: {menu_music_path}")
         except Exception as e:
@@ -169,12 +169,12 @@ class MenuSystem:
         """Load all sound effects"""
         self.sounds = {}
 
-        # Sound effects
+        # Sound effects with drastically reduced volume
         sound_files = {
-            'horror_start': ('assets/sounds/effects/horror_start.wav', 0.5),
-            'menu_hover': ('assets/sounds/effects/menu_hover.wav', 0.3),
-            'menu_click': ('assets/sounds/effects/menu_click.wav', 0.4),
-            'pacman_move': ('assets/sounds/effects/pacman_move.wav', 0.2)
+            'horror_start': ('assets/sounds/effects/horror_start.wav', 0.1),    # Reduziert auf 10%
+            'menu_hover': ('assets/sounds/effects/menu_hover.wav', 0.05),      # Reduziert auf 5%
+            'menu_click': ('assets/sounds/effects/menu_click.wav', 0.08),      # Reduziert auf 8%
+            'pacman_move': ('assets/sounds/effects/pacman_move.wav', 0.04)     # Reduziert auf 4%
         }
 
         for sound_name, (filename, volume) in sound_files.items():
@@ -182,7 +182,7 @@ class MenuSystem:
                 sound = pygame.mixer.Sound(filename)
                 sound.set_volume(volume)
                 self.sounds[sound_name] = sound
-                print(f"{sound_name} sound loaded!")
+                print(f"{sound_name} sound loaded at {volume * 100:.0f}% volume!")
             except Exception as e:
                 self.sounds[sound_name] = None
                 print(f"{sound_name} sound not found: {e}")
