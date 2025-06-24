@@ -96,13 +96,17 @@ class Game:
         self.score = 0
         self.lives = 3
 
-        # Sound-System aus dem ursprünglichen Code
+        # Sound-System
         self.sound_enabled = True
         self.sound_loaded = False
         self.wakawaka_sound = None
         self.wakawaka_channel = None
-        self.is_moving = False
-        self.last_moving_state = False
+        self.eat_ghost_sound = None
+        self.death_sound = None
+
+        # Waka-Waka Timer für bessere Kontrolle
+        self.wakawaka_timer = 0
+        self.wakawaka_interval = 200  # Millisekunden zwischen Sounds
 
         # Musikmanager initialisieren
         self.music_manager = MusicManager()
@@ -116,7 +120,7 @@ class Game:
         self.pellet_manager = PelletManager(self.maze)
         self.menu = Menu()
 
-        # Initialize ghosts - Geister-Startbereich
+        # Initialize ghosts - Geister-Startbereich mit klassischen Namen
         ghost_start_x = self.maze.width // 2
         ghost_start_y = self.maze.height // 2
         self.ghosts = [
@@ -130,29 +134,37 @@ class Game:
         self.font = pygame.font.Font(None, 36)
 
     def load_sounds(self):
-        """Lade Sound-Dateien - aus dem ursprünglichen Code"""
+        """Lade Sound-Dateien"""
         try:
             pygame.mixer.init()
-            # Versuche verschiedene Pfade
-            sound_paths = [
-                "../feature/sounds/wakawaka.wav",
-                "feature/sounds/wakawaka.wav",
-                "assets/sounds/effects/wakawaka.wav"
-            ]
 
-            for path in sound_paths:
-                try:
-                    self.wakawaka_sound = pygame.mixer.Sound(path)
-                    self.wakawaka_sound.set_volume(0.2)  # 20% Lautstärke
-                    self.sound_loaded = True
-                    print(f"WakaWaka sound loaded successfully from {path} at 20% volume!")
-                    break
-                except (pygame.error, FileNotFoundError):
-                    continue
+            # Hauptpfad für Sounds
+            sound_path = "assets/sounds/effects/"
 
-            if not self.sound_loaded:
-                print("Could not load wakawaka.wav from any location")
-                print("Sound will be disabled")
+            try:
+                # Waka-Waka Sound
+                self.wakawaka_sound = pygame.mixer.Sound(sound_path + "wakawaka.wav")
+                self.wakawaka_sound.set_volume(0.3)
+                print("Waka-waka sound loaded!")
+            except:
+                print("Could not load wakawaka.wav")
+
+            try:
+                # Ghost eat sound
+                self.eat_ghost_sound = pygame.mixer.Sound(sound_path + "eat_ghost.wav")
+                self.eat_ghost_sound.set_volume(0.4)
+                print("Eat ghost sound loaded!")
+            except:
+                print("Could not load eat_ghost.wav")
+
+            try:
+                # Death sound
+                self.death_sound = pygame.mixer.Sound(sound_path + "death.wav")
+                self.death_sound.set_volume(0.5)
+                print("Death sound loaded!")
+                self.sound_loaded = True
+            except:
+                print("Could not load death.wav")
 
         except Exception as e:
             print(f"Sound system error: {e}")
@@ -164,15 +176,28 @@ class Game:
         self.music_manager.play_background_music()
 
     def play_wakawaka_sound(self):
-        """Spiele WakaWaka Sound ab wenn Pac-Man sich bewegt"""
+        """Spiele WakaWaka Sound nur beim Essen"""
         if self.sound_enabled and self.sound_loaded and self.wakawaka_sound:
-            if not self.wakawaka_channel or not self.wakawaka_channel.get_busy():
-                self.wakawaka_channel = self.wakawaka_sound.play(-1)  # Loop indefinitely
+            current_time = pygame.time.get_ticks()
+            # Spiele Sound nur wenn genug Zeit vergangen ist
+            if current_time - self.wakawaka_timer > self.wakawaka_interval:
+                self.wakawaka_sound.play()
+                self.wakawaka_timer = current_time
 
     def stop_wakawaka_sound(self):
         """Stoppe WakaWaka Sound"""
         if self.wakawaka_channel and self.wakawaka_channel.get_busy():
             self.wakawaka_channel.stop()
+
+    def play_eat_ghost_sound(self):
+        """Spiele Sound beim Geister essen"""
+        if self.sound_enabled and self.sound_loaded and self.eat_ghost_sound:
+            self.eat_ghost_sound.play()
+
+    def play_death_sound(self):
+        """Spiele Sound beim Tod"""
+        if self.sound_enabled and self.sound_loaded and self.death_sound:
+            self.death_sound.play()
 
     def handle_event(self, event):
         """Handle input events"""
@@ -229,6 +254,8 @@ class Game:
                     self.state = MENU
                     # Musik stoppen wenn zum Menü gewechselt wird
                     self.music_manager.stop_background_music()
+                    # Starte Menü-Musik wieder
+                    self.menu.menu_system.start_menu_music()
 
         elif self.state == GAME_OVER:
             if event.type == pygame.KEYDOWN:
@@ -237,6 +264,8 @@ class Game:
                 elif event.key == pygame.K_q:
                     self.state = MENU
                     self.music_manager.stop_background_music()
+                    # Starte Menü-Musik wieder
+                    self.menu.menu_system.start_menu_music()
 
         elif self.state == VICTORY:
             if event.type == pygame.KEYDOWN:
@@ -245,6 +274,8 @@ class Game:
                 elif event.key == pygame.K_q:
                     self.state = MENU
                     self.music_manager.stop_background_music()
+                    # Starte Menü-Musik wieder
+                    self.menu.menu_system.start_menu_music()
 
     def start_game(self):
         """Start a new game"""
@@ -258,6 +289,8 @@ class Game:
         self.pacman.initialize_nodes(self.maze.node_map)
 
         self.pellet_manager.reset()
+
+        # Reset ghosts mit ihren Startpositionen
         ghost_start_x = self.maze.width // 2
         ghost_start_y = self.maze.height // 2
         for ghost in self.ghosts:
@@ -282,25 +315,32 @@ class Game:
             # Update Pac-Man
             self.pacman.update(self.maze)
 
-            # Sound-Steuerung aus dem ursprünglichen Code
-            self.is_moving = (self.pacman.velocity_x != 0 or self.pacman.velocity_y != 0)
-
-            if self.is_moving and not self.last_moving_state:
-                # Pac-Man hat angefangen sich zu bewegen
-                self.play_wakawaka_sound()
-            elif not self.is_moving and self.last_moving_state:
-                # Pac-Man hat aufgehört sich zu bewegen
-                self.stop_wakawaka_sound()
-
-            self.last_moving_state = self.is_moving
-
             # Update ghosts
             for ghost in self.ghosts:
-                ghost.update(self.maze, self.pacman)
+                ghost.update(self.maze, self.pacman, self.ghosts)
+
+            # Update pellets
+            self.pellet_manager.update()
 
             # Check pellet collection
-            collected_pellets = self.pellet_manager.check_collection(self.pacman)
-            self.score += collected_pellets
+            collected_points = self.pellet_manager.check_collection(self.pacman)
+            if collected_points != 0:
+                if collected_points < 0:
+                    # Power Pellet gegessen (negativ als Signal)
+                    self.score += abs(collected_points)
+                    # Mache alle Geister ängstlich
+                    for ghost in self.ghosts:
+                        ghost.set_frightened()
+                else:
+                    # Normale Pellet
+                    self.score += collected_points
+
+                # Pac-Man isst gerade - spiele Waka-Waka Sound
+                self.play_wakawaka_sound()
+                self.pacman.set_eating(True)
+            else:
+                # Pac-Man isst nicht
+                self.pacman.set_eating(False)
 
             # Check ghost collisions
             for ghost in self.ghosts:
@@ -308,19 +348,28 @@ class Game:
                     if ghost.mode == FRIGHTENED:
                         ghost.mode = EATEN
                         self.score += 200
-                    else:
+                        self.play_eat_ghost_sound()
+                    elif ghost.mode != EATEN:  # Geister im EATEN mode können nicht töten
+                        # Pac-Man stirbt
                         self.lives -= 1
-                        self.stop_wakawaka_sound()  # Stoppe Sound bei Kollision
+
+                        # Spiele Tod-Sound
+                        self.play_death_sound()
+
+                        # Pause für Tod-Animation
+                        pygame.time.wait(1500)  # 1.5 Sekunden Pause
+
                         if self.lives <= 0:
                             self.state = GAME_OVER
                             self.music_manager.stop_background_music()
                         else:
-                            self.pacman.reset(1, 1)  # Auf die korrekte Startposition zurücksetzen
+                            # Reset Level - Pac-Man und Geister zurück zu Start
+                            # aber Punkte bleiben weg!
+                            self.reset_after_death()
 
             # Check victory condition
             if self.pellet_manager.all_collected():
                 self.state = VICTORY
-                self.stop_wakawaka_sound()
                 self.music_manager.stop_background_music()
 
     def draw(self):
@@ -334,8 +383,8 @@ class Game:
             # Draw maze
             self.maze.draw(self.screen)
 
-            # Debug: Nodes anzeigen (auf True setzen, um Nodes zu sehen)
-            self.maze.draw_nodes(self.screen, show_nodes=True)
+            # Debug: Nodes anzeigen (auf False setzen für normales Spiel)
+            self.maze.draw_nodes(self.screen, show_nodes=False)
 
             # Draw pellets
             self.pellet_manager.draw(self.screen)
@@ -369,7 +418,7 @@ class Game:
         lives_text = self.font.render(f"Lives: {self.lives}", True, WHITE)
         self.screen.blit(lives_text, (10, SCREEN_HEIGHT - 25))
 
-        # Musik-Steuerung Hinweise (optional, kannst du entfernen wenn störend)
+        # Musik-Steuerung Hinweise
         music_hint = self.font.render("M: Music On/Off  +/-: Volume", True, WHITE)
         music_hint = pygame.transform.scale(music_hint, (music_hint.get_width()//2, music_hint.get_height()//2))
         self.screen.blit(music_hint, (SCREEN_WIDTH - 250, SCREEN_HEIGHT - 25))
@@ -420,6 +469,25 @@ class Game:
         restart_text = self.font.render("Press SPACE to play again or Q for menu", True, WHITE)
         restart_rect = restart_text.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2 + 40))
         self.screen.blit(restart_text, restart_rect)
+
+    def reset_after_death(self):
+        """Reset nach Pac-Man Tod - Positionen zurücksetzen aber Punkte bleiben weg"""
+        # Reset Pac-Man zur Startposition
+        self.pacman.reset(1, 1)
+        self.pacman.initialize_nodes(self.maze.node_map)
+
+        # Reset alle Geister zu ihren Startpositionen
+        ghost_start_x = self.maze.width // 2
+        ghost_start_y = self.maze.height // 2
+        for ghost in self.ghosts:
+            ghost.reset(ghost_start_x, ghost_start_y)
+            # Reset auch ihre Modi
+            ghost.mode = SCATTER
+            ghost.mode_timer = 0
+            ghost.scatter_timer = 0
+
+        # WICHTIG: Pellets bleiben gefressen!
+        # Keine pellet_manager.reset() hier!
 
     def cleanup(self):
         """Aufräumen beim Beenden des Spiels"""

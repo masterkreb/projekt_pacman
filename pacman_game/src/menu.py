@@ -50,9 +50,9 @@ class MenuSystem:
 
         # Game state variables
         self.start_effect_timer = 0
-        self.start_effect_duration = 800  # Verkürzt auf 0,8 Sekunden (vorher 5 Sekunden)
+        self.start_effect_duration = 5000  # 5 Sekunden für den Horror-Sound
         self.darkness_overlay = 0
-        self.skip_horror_effect = True  # Optional: Horror-Effekt komplett überspringen
+        self.skip_horror_effect = False  # Horror-Effekt AKTIVIERT!
 
         # Player variables (for gameplay demo)
         self.player_x = screen_width // 2
@@ -68,6 +68,9 @@ class MenuSystem:
         # Button hover states
         self.start_hovered = False
         self.exit_hovered = False
+
+        # Starte Menü-Musik
+        self.start_menu_music()
 
     def _init_display(self):
         """Initialize display and UI manager"""
@@ -138,31 +141,40 @@ class MenuSystem:
                 star_y = random.randint(0, self.screen_height)
                 star_size = random.randint(1, 3)
                 brightness = random.randint(150, 255)
-                pygame.draw.circle(self.background_image, (brightness, brightness, brightness), 
-                                  (star_x, star_y), star_size)
+                pygame.draw.circle(self.background_image, (brightness, brightness, brightness),
+                                   (star_x, star_y), star_size)
 
             self.has_background_image = False
             print(f"Hintergrundbild nicht gefunden, verwende generierte Alternative: {e}")
 
-    def _load_sounds(self):
-        """Load all sound effects and music"""
-        self.sounds = {}
-
-        # Background music
+    def start_menu_music(self):
+        """Startet die Menü-Hintergrundmusik"""
         try:
-            pygame.mixer.music.load('../assets/sounds/effects/menu_music.mp3')
-            pygame.mixer.music.set_volume(1.0)
-            pygame.mixer.music.play(-1)
-            print("Background music loaded!")
+            menu_music_path = 'assets/sounds/effects/menu_music.mp3'
+            if os.path.exists(menu_music_path):
+                pygame.mixer.music.load(menu_music_path)
+                pygame.mixer.music.set_volume(0.7)
+                pygame.mixer.music.play(-1)  # Loop unendlich
+                print("Menu music loaded and started!")
+            else:
+                print(f"Menu music not found at: {menu_music_path}")
         except Exception as e:
-            print(f"Background music not found: {e}")
+            print(f"Could not load menu music: {e}")
+
+    def stop_menu_music(self):
+        """Stoppt die Menü-Musik"""
+        pygame.mixer.music.stop()
+
+    def _load_sounds(self):
+        """Load all sound effects"""
+        self.sounds = {}
 
         # Sound effects
         sound_files = {
-            'horror_start': ('../assets/sounds/effects/horror_start.wav', 0.5),
-            'menu_hover': ('menu_hover.wav', 0.3),
-            'menu_click': ('menu_click.wav', 0.4),
-            'pacman_move': ('pacman_move.wav', 0.2)
+            'horror_start': ('assets/sounds/effects/horror_start.wav', 0.5),
+            'menu_hover': ('assets/sounds/effects/menu_hover.wav', 0.3),
+            'menu_click': ('assets/sounds/effects/menu_click.wav', 0.4),
+            'pacman_move': ('assets/sounds/effects/pacman_move.wav', 0.2)
         }
 
         for sound_name, (filename, volume) in sound_files.items():
@@ -242,22 +254,16 @@ class MenuSystem:
                 if self.start_button_rect.collidepoint(mouse_pos):
                     self._play_sound('menu_click')
 
-                    if self.skip_horror_effect:
-                        # Überspringe den Horror-Effekt und starte das Spiel sofort
-                        self.current_state = self.GAMEPLAY
-                        pygame.mixer.music.stop()
-                        print('Skipping horror effect, starting game directly...')
-                        return 'start_game'
-                    else:
-                        # Horror-Effekt wie vorher starten
-                        self._play_sound('horror_start')
-                        self.current_state = self.HORROR_EFFECT
-                        self.start_effect_timer = current_time
-                        pygame.mixer.music.stop()
-                        print('Starting horror effect...')
+                    # Starte den Horror-Effekt wie in Resident Evil/Silent Hill
+                    self._play_sound('horror_start')
+                    self.current_state = self.HORROR_EFFECT
+                    self.start_effect_timer = current_time
+                    self.stop_menu_music()  # Stoppe Menü-Musik
+                    print('Starting horror effect with 5 second sound...')
 
                 elif self.exit_button_rect.collidepoint(mouse_pos):
                     self._play_sound('menu_click')
+                    self.stop_menu_music()  # Stoppe Menü-Musik beim Beenden
                     return 'quit'
 
         elif event.type == pygame.MOUSEMOTION:
@@ -302,14 +308,16 @@ class MenuSystem:
             elapsed_time = current_time - self.start_effect_timer
 
             if elapsed_time < self.start_effect_duration:
-                # Schnellerer Fortschritt für den Horror-Effekt
+                # Langsame Verdunkelung über 5 Sekunden
                 progress = elapsed_time / self.start_effect_duration
+                # Nicht-lineare Kurve für dramatischeren Effekt
+                progress = progress * progress  # Quadratische Kurve
                 self.darkness_overlay = int(255 * progress)
             else:
-                # Übergang zum Spiel
+                # Übergang zum Spiel nach 5 Sekunden
                 self.current_state = self.GAMEPLAY
-                self.darkness_overlay = 0
-                print("🎮 Horror effect complete - ready for gameplay!")
+                self.darkness_overlay = 255  # Komplett schwarz
+                print("🎮 Horror effect complete - starting game!")
                 return 'start_game'
 
         elif self.current_state == self.GAMEPLAY:
@@ -389,12 +397,28 @@ class MenuSystem:
                          (int(self.player_x), int(self.player_y), self.player_size, self.player_size))
 
     def _draw_horror_effect(self, surface):
-        """Draw horror transition effect"""
+        """Draw horror transition effect wie in Resident Evil/Silent Hill"""
+        # Zeichne erst das normale Menü im Hintergrund
+        self._draw_main_menu(surface)
+
+        # Dann die Verdunkelung darüber
         if self.darkness_overlay > 0:
             dark_surface = pygame.Surface((self.screen_width, self.screen_height))
             dark_surface.fill((0, 0, 0))
             dark_surface.set_alpha(self.darkness_overlay)
             surface.blit(dark_surface, (0, 0))
+
+            # Optional: Zeige einen gruseligen Text während der Verdunkelung
+            if self.darkness_overlay > 128:  # Wenn mehr als halb dunkel
+                # Erstelle einen flackernden Text-Effekt
+                if random.randint(0, 10) > 3:  # 70% Chance anzuzeigen
+                    horror_font = pygame.font.Font(None, 48)
+                    horror_text = horror_font.render("BEWARE...", True, (200, 0, 0))
+                    text_rect = horror_text.get_rect(center=(self.screen_width // 2, self.screen_height // 2))
+                    # Leicht zufällige Position für Zitter-Effekt
+                    text_rect.x += random.randint(-2, 2)
+                    text_rect.y += random.randint(-2, 2)
+                    surface.blit(horror_text, text_rect)
 
     def get_current_state(self) -> int:
         """Get the current menu state"""
