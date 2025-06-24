@@ -4,6 +4,7 @@ Handles game logic, state management, and coordination between components
 """
 
 import pygame
+import os
 from .constants import *
 from .player import Pacman
 from .ghost import Ghost
@@ -11,13 +12,90 @@ from .maze import Maze
 from .pellets import PelletManager
 from .menu import Menu
 
+class MusicManager:
+    """Verwaltet die Hintergrundmusik für das Pacman-Spiel"""
+
+    def __init__(self):
+        self.music_loaded = False
+        self.music_playing = False
+        self.music_volume = 0.5
+        self.music_files = {
+            'background': 'assets/sounds//effects/background_music.mp3',
+            'game_start': 'assets/audio/game_start.ogg',
+            'game_over': 'assets/audio/game_over.ogg',
+            'level_complete': 'assets/audio/level_complete.ogg'
+        }
+
+    def load_background_music(self, music_file=None):
+        """Lädt die Hintergrundmusik"""
+        try:
+            if music_file is None:
+                music_file = self.music_files['background']
+
+            if os.path.exists(music_file):
+                pygame.mixer.music.load(music_file)
+                pygame.mixer.music.set_volume(self.music_volume)
+                self.music_loaded = True
+                print(f"Hintergrundmusik geladen: {music_file}")
+            else:
+                print(f"Musikdatei nicht gefunden: {music_file}")
+                self.music_loaded = False
+
+        except pygame.error as e:
+            print(f"Fehler beim Laden der Musik: {e}")
+            self.music_loaded = False
+
+    def play_background_music(self, loops=-1):
+        """Startet die Hintergrundmusik"""
+        if self.music_loaded and not self.music_playing:
+            try:
+                pygame.mixer.music.play(loops)
+                self.music_playing = True
+                print("Hintergrundmusik gestartet")
+            except pygame.error as e:
+                print(f"Fehler beim Abspielen der Musik: {e}")
+
+    def stop_background_music(self):
+        """Stoppt die Hintergrundmusik"""
+        pygame.mixer.music.stop()
+        self.music_playing = False
+        print("Hintergrundmusik gestoppt")
+
+    def pause_background_music(self):
+        """Pausiert die Hintergrundmusik"""
+        if self.music_playing:
+            pygame.mixer.music.pause()
+            print("Hintergrundmusik pausiert")
+
+    def unpause_background_music(self):
+        """Setzt die Hintergrundmusik fort"""
+        pygame.mixer.music.unpause()
+        print("Hintergrundmusik fortgesetzt")
+
+    def set_volume(self, volume):
+        """Setzt die Lautstärke der Musik"""
+        self.music_volume = max(0.0, min(1.0, volume))
+        pygame.mixer.music.set_volume(self.music_volume)
+        print(f"Musiklautstärke gesetzt auf: {self.music_volume}")
+
+    def toggle_music(self):
+        """Schaltet die Musik ein/aus"""
+        if self.music_playing:
+            self.pause_background_music()
+        else:
+            self.unpause_background_music()
+
+    def is_playing(self):
+        """Prüft ob Musik gerade abgespielt wird"""
+        return pygame.mixer.music.get_busy()
+
 class Game:
     def __init__(self, screen):
         self.screen = screen
         self.state = MENU
         self.score = 0
         self.lives = 3
-        
+
         # Sound-System aus dem ursprünglichen Code
         self.sound_enabled = True
         self.sound_loaded = False
@@ -25,15 +103,19 @@ class Game:
         self.wakawaka_channel = None
         self.is_moving = False
         self.last_moving_state = False
-        
+
+        # Musikmanager initialisieren
+        self.music_manager = MusicManager()
+
         # Lade Sounds
         self.load_sounds()
-          # Initialize game components
+
+        # Initialize game components
         self.maze = Maze()
         self.pacman = Pacman(11, 15)  # Bessere Startposition im Labyrinth
         self.pellet_manager = PelletManager(self.maze)
         self.menu = Menu()
-        
+
         # Initialize ghosts - Geister-Startbereich
         ghost_start_x = self.maze.width // 2
         ghost_start_y = self.maze.height // 2
@@ -43,10 +125,10 @@ class Game:
             Ghost(ghost_start_x, ghost_start_y, CYAN, "inky"),
             Ghost(ghost_start_x, ghost_start_y, ORANGE, "clyde")
         ]
-        
+
         # Font for UI
         self.font = pygame.font.Font(None, 36)
-        
+
     def load_sounds(self):
         """Lade Sound-Dateien - aus dem ursprünglichen Code"""
         try:
@@ -57,7 +139,7 @@ class Game:
                 "feature/sounds/wakawaka.wav",
                 "assets/sounds/effects/wakawaka.wav"
             ]
-            
+
             for path in sound_paths:
                 try:
                     self.wakawaka_sound = pygame.mixer.Sound(path)
@@ -67,26 +149,31 @@ class Game:
                     break
                 except (pygame.error, FileNotFoundError):
                     continue
-                    
+
             if not self.sound_loaded:
                 print("Could not load wakawaka.wav from any location")
                 print("Sound will be disabled")
-                
+
         except Exception as e:
             print(f"Sound system error: {e}")
             self.sound_loaded = False
-    
+
+    def setup_music(self):
+        """Lädt und startet die Hintergrundmusik"""
+        self.music_manager.load_background_music()
+        self.music_manager.play_background_music()
+
     def play_wakawaka_sound(self):
         """Spiele WakaWaka Sound ab wenn Pac-Man sich bewegt"""
         if self.sound_enabled and self.sound_loaded and self.wakawaka_sound:
             if not self.wakawaka_channel or not self.wakawaka_channel.get_busy():
                 self.wakawaka_channel = self.wakawaka_sound.play(-1)  # Loop indefinitely
-    
+
     def stop_wakawaka_sound(self):
         """Stoppe WakaWaka Sound"""
         if self.wakawaka_channel and self.wakawaka_channel.get_busy():
             self.wakawaka_channel.stop()
-    
+
     def handle_event(self, event):
         """Handle input events"""
         if self.state == MENU:
@@ -104,11 +191,24 @@ class Game:
                     self.start_game()
                 elif event.key == pygame.K_q:
                     return False
-        
+
         elif self.state == PLAYING:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     self.state = PAUSED
+                    # Musik pausieren wenn das Spiel pausiert wird
+                    self.music_manager.pause_background_music()
+                # Musik-Steuerung
+                elif event.key == pygame.K_m:
+                    self.music_manager.toggle_music()
+                elif event.key == pygame.K_MINUS:
+                    # Lautstärke verringern
+                    current_vol = self.music_manager.music_volume
+                    self.music_manager.set_volume(current_vol - 0.1)
+                elif event.key == pygame.K_PLUS or event.key == pygame.K_EQUALS:
+                    # Lautstärke erhöhen
+                    current_vol = self.music_manager.music_volume
+                    self.music_manager.set_volume(current_vol + 0.1)
                 # Node-basierte Steuerung mit WASD oder Pfeiltasten
                 elif event.key == pygame.K_w or event.key == pygame.K_UP:
                     self.pacman.set_direction(UP)
@@ -123,15 +223,29 @@ class Game:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     self.state = PLAYING
+                    # Musik fortsetzen wenn das Spiel fortgesetzt wird
+                    self.music_manager.unpause_background_music()
                 elif event.key == pygame.K_q:
                     self.state = MENU
-        
+                    # Musik stoppen wenn zum Menü gewechselt wird
+                    self.music_manager.stop_background_music()
+
         elif self.state == GAME_OVER:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     self.restart_game()
                 elif event.key == pygame.K_q:
-                    self.state = MENU    
+                    self.state = MENU
+                    self.music_manager.stop_background_music()
+
+        elif self.state == VICTORY:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    self.restart_game()
+                elif event.key == pygame.K_q:
+                    self.state = MENU
+                    self.music_manager.stop_background_music()
+
     def start_game(self):
         """Start a new game"""
         self.state = PLAYING
@@ -148,10 +262,14 @@ class Game:
         ghost_start_y = self.maze.height // 2
         for ghost in self.ghosts:
             ghost.reset(ghost_start_x, ghost_start_y)
-    
+
+        # Hintergrundmusik starten
+        self.setup_music()
+
     def restart_game(self):
         """Restart the current game"""
-        self.start_game()    
+        self.start_game()
+
     def update(self):
         """Update game logic"""
         # Prüfe auf Statusänderungen im Menüsystem, wenn wir im Menü sind
@@ -163,27 +281,27 @@ class Game:
         if self.state == PLAYING:
             # Update Pac-Man
             self.pacman.update(self.maze)
-            
+
             # Sound-Steuerung aus dem ursprünglichen Code
             self.is_moving = (self.pacman.velocity_x != 0 or self.pacman.velocity_y != 0)
-            
+
             if self.is_moving and not self.last_moving_state:
                 # Pac-Man hat angefangen sich zu bewegen
                 self.play_wakawaka_sound()
             elif not self.is_moving and self.last_moving_state:
                 # Pac-Man hat aufgehört sich zu bewegen
                 self.stop_wakawaka_sound()
-            
+
             self.last_moving_state = self.is_moving
-            
+
             # Update ghosts
             for ghost in self.ghosts:
                 ghost.update(self.maze, self.pacman)
-            
+
             # Check pellet collection
             collected_pellets = self.pellet_manager.check_collection(self.pacman)
             self.score += collected_pellets
-            
+
             # Check ghost collisions
             for ghost in self.ghosts:
                 if self.pacman.collides_with(ghost):
@@ -195,6 +313,7 @@ class Game:
                         self.stop_wakawaka_sound()  # Stoppe Sound bei Kollision
                         if self.lives <= 0:
                             self.state = GAME_OVER
+                            self.music_manager.stop_background_music()
                         else:
                             self.pacman.reset(1, 1)  # Auf die korrekte Startposition zurücksetzen
 
@@ -202,96 +321,106 @@ class Game:
             if self.pellet_manager.all_collected():
                 self.state = VICTORY
                 self.stop_wakawaka_sound()
-    
+                self.music_manager.stop_background_music()
+
     def draw(self):
         """Draw everything to the screen"""
         self.screen.fill(BLACK)
-        
+
         if self.state == MENU:
             self.menu.draw(self.screen)
-        
+
         elif self.state in [PLAYING, PAUSED]:
             # Draw maze
             self.maze.draw(self.screen)
-            
+
             # Debug: Nodes anzeigen (auf True setzen, um Nodes zu sehen)
             self.maze.draw_nodes(self.screen, show_nodes=True)
 
             # Draw pellets
             self.pellet_manager.draw(self.screen)
-            
+
             # Draw Pac-Man
             self.pacman.draw(self.screen)
-            
+
             # Draw ghosts
             for ghost in self.ghosts:
                 ghost.draw(self.screen)
-            
+
             # Draw UI
             self.draw_ui()
-            
+
             if self.state == PAUSED:
                 self.draw_pause_screen()
-        
+
         elif self.state == GAME_OVER:
             self.draw_game_over()
-        
+
         elif self.state == VICTORY:
             self.draw_victory()
-    
+
     def draw_ui(self):
         """Draw game UI (score, lives, etc.)"""
         # Score
         score_text = self.font.render(f"Score: {self.score}", True, WHITE)
         self.screen.blit(score_text, (10, SCREEN_HEIGHT - 50))
-        
+
         # Lives
         lives_text = self.font.render(f"Lives: {self.lives}", True, WHITE)
         self.screen.blit(lives_text, (10, SCREEN_HEIGHT - 25))
-    
+
+        # Musik-Steuerung Hinweise (optional, kannst du entfernen wenn störend)
+        music_hint = self.font.render("M: Music On/Off  +/-: Volume", True, WHITE)
+        music_hint = pygame.transform.scale(music_hint, (music_hint.get_width()//2, music_hint.get_height()//2))
+        self.screen.blit(music_hint, (SCREEN_WIDTH - 250, SCREEN_HEIGHT - 25))
+
     def draw_pause_screen(self):
         """Draw pause overlay"""
         overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
         overlay.set_alpha(128)
         overlay.fill(BLACK)
         self.screen.blit(overlay, (0, 0))
-        
+
         pause_text = self.font.render("PAUSED", True, WHITE)
         text_rect = pause_text.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2))
         self.screen.blit(pause_text, text_rect)
-        
+
         resume_text = self.font.render("Press ESC to resume", True, WHITE)
         resume_rect = resume_text.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2 + 40))
         self.screen.blit(resume_text, resume_rect)
-    
+
     def draw_game_over(self):
         """Draw game over screen"""
         self.screen.fill(BLACK)
-        
+
         game_over_text = self.font.render("GAME OVER", True, RED)
         text_rect = game_over_text.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2 - 40))
         self.screen.blit(game_over_text, text_rect)
-        
+
         score_text = self.font.render(f"Final Score: {self.score}", True, WHITE)
         score_rect = score_text.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2))
         self.screen.blit(score_text, score_rect)
-        
+
         restart_text = self.font.render("Press SPACE to restart or Q for menu", True, WHITE)
         restart_rect = restart_text.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2 + 40))
         self.screen.blit(restart_text, restart_rect)
-    
+
     def draw_victory(self):
         """Draw victory screen"""
         self.screen.fill(BLACK)
-        
+
         victory_text = self.font.render("VICTORY!", True, GREEN)
         text_rect = victory_text.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2 - 40))
         self.screen.blit(victory_text, text_rect)
-        
+
         score_text = self.font.render(f"Final Score: {self.score}", True, WHITE)
         score_rect = score_text.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2))
         self.screen.blit(score_text, score_rect)
-        
+
         restart_text = self.font.render("Press SPACE to play again or Q for menu", True, WHITE)
         restart_rect = restart_text.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2 + 40))
         self.screen.blit(restart_text, restart_rect)
+
+    def cleanup(self):
+        """Aufräumen beim Beenden des Spiels"""
+        self.music_manager.stop_background_music()
