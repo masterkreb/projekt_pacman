@@ -13,39 +13,43 @@ class Pacman:
         self.start_x = start_x
         self.start_y = start_y
         
-        # Pixel-Position - angepasst auf die übergebenen Startkoordinaten
+        # Position
         self.x = start_x * GRID_SIZE
         self.y = start_y * GRID_SIZE
-
-        # Grid-Position
         self.grid_x = self.x // GRID_SIZE
         self.grid_y = self.y // GRID_SIZE
-        
-        # Node-basierte Bewegung (analog zum ursprünglichen Code)
-        self.pos = None  # Aktueller Node
-        self.target = None  # Ziel-Node
+
+        # Node-based movement
+        self.pos = None
+        self.target = None
         self.all_nodes = []
 
-        # Bewegungssystem aus dem ursprünglichen Code
+        # Movement
         self.current_direction = None
         self.next_direction = None
         self.velocity_x = 0
         self.velocity_y = 0
         self.speed = PACMAN_SPEED
-        self.base_speed = PACMAN_SPEED  # Basis-Geschwindigkeit speichern
-        self.size = PACMAN_SIZE   # 20 wie im Original
+        self.base_speed = PACMAN_SPEED
+        self.size = PACMAN_SIZE
 
         # Speed Boost System
         self.speed_boost_active = False
         self.speed_boost_timer = 0
-        self.speed_boost_duration = 360  # 6 Sekunden bei 60 FPS
+        self.speed_boost_duration = 180  # 3 seconds at 60 FPS
+
+        # Progressive Speed Stack System
+        self.speed_stacks = 0
+        self.max_speed_stacks = 5
+        self.speed_per_stack = 0.07  # 7% per stack
+        self.stacked_speed_multiplier = 1.0
 
         # Animation
         self.animation_frame = 0
         self.animation_speed = 0.2
         self.mouth_open = True
 
-        # Bewegungstasten wie im Original
+        # Movement keys
         self.move_keys = {
             'up': [pygame.K_w, pygame.K_UP],
             'down': [pygame.K_s, pygame.K_DOWN],
@@ -53,16 +57,15 @@ class Pacman:
             'right': [pygame.K_d, pygame.K_RIGHT]
         }
 
-        # Status flags
+        # Status
         self.is_moving = False
-        self.is_eating = False  # NEU: Flag für das Essen von Pellets
+        self.is_eating = False
 
-        # Sprite laden
+        # Load sprite
         try:
             self.sprite_sheet = pygame.image.load(
                 'assets/images/maze/Teil_017_Pacman_Tileset.png'
             ).convert_alpha()
-            # Frame-Größe automatisch bestimmen (4 Frames horizontal, 4 Zeilen für Richtungen)
             sheet_width, sheet_height = self.sprite_sheet.get_size()
             self.frame_count = 4
             self.direction_count = 4
@@ -70,12 +73,12 @@ class Pacman:
             self.frame_height = sheet_height // self.direction_count
             self.sprite_loaded = True
         except (pygame.error, FileNotFoundError) as e:
-            print(f"Konnte Pacman-Sprite nicht laden: {e}")
+            print(f"Could not load Pacman sprite: {e}")
             self.sprite_sheet = None
             self.sprite_loaded = False
 
     def get_pressed_direction(self, keys):
-        """Checkt welche Richtungstaste gedrückt wird - aus dem Original"""
+        """Check which direction key is pressed"""
         for direction, key_list in self.move_keys.items():
             for key in key_list:
                 if keys[key]:
@@ -83,7 +86,7 @@ class Pacman:
         return None
 
     def set_velocity_from_direction(self, direction):
-        """Setzt die Geschwindigkeit basierend auf Richtung - originales Pacman Movement"""
+        """Set velocity based on direction"""
         if direction == 'up':
             self.velocity_x, self.velocity_y = 0, -self.speed
             self.current_direction = 'up'
@@ -98,7 +101,7 @@ class Pacman:
             self.current_direction = 'right'
 
     def set_direction(self, direction):
-        """Set the next direction for Pac-Man - kompatibel mit neuem System"""
+        """Set the next direction for Pac-Man"""
         if direction == UP:
             self.next_direction = 'up'
         elif direction == DOWN:
@@ -110,15 +113,35 @@ class Pacman:
         elif direction == STOP:
             self.next_direction = None
 
+    def add_speed_stack(self):
+        """Add a speed stack (max 5 stacks = 35% speed)"""
+        if self.speed_stacks < self.max_speed_stacks:
+            self.speed_stacks += 1
+            self.stacked_speed_multiplier = 1.0 + (self.speed_stacks * self.speed_per_stack)
+            self.base_speed = PACMAN_SPEED * self.stacked_speed_multiplier
+            if not self.speed_boost_active:
+                self.speed = self.base_speed
+            print(f"Pacman speed stack: {self.speed_stacks}/5 ({(self.stacked_speed_multiplier-1)*100:.0f}% bonus)")
+
     def activate_speed_boost(self):
-        """Aktiviert den Speed Boost für 6 Sekunden"""
+        """Activate speed boost for 3 seconds"""
         self.speed_boost_active = True
         self.speed_boost_timer = self.speed_boost_duration
-        self.speed = PACMAN_SPEED_BOOST
+        self.speed = self.base_speed * 2.15  # 115% extra speed
         print("Speed boost activated!")
 
+    def activate_power_speed_boost(self):
+        """Activate 20% speed boost from power pellet"""
+        if self.speed_boost_active:
+            self.speed *= 1.2
+        else:
+            self.speed_boost_active = True
+            self.speed_boost_timer = self.speed_boost_duration
+            self.speed = self.base_speed * 1.2
+        print("Power pellet speed boost!")
+
     def update(self, maze):
-        """Update Pac-Man's position and state - Strikt Node-basierte Bewegung"""
+        """Update Pac-Man's position and state"""
         # Update speed boost
         if self.speed_boost_active:
             self.speed_boost_timer -= 1
@@ -127,37 +150,33 @@ class Pacman:
                 self.speed = self.base_speed
                 print("Speed boost ended")
 
-        # Grid-Position aktualisieren
+        # Update grid position
         self.grid_x = int(self.x // GRID_SIZE)
         self.grid_y = int(self.y // GRID_SIZE)
 
-        # Aktuellen Node ermitteln, falls noch nicht gesetzt
+        # Initialize node if needed
         if self.pos is None and maze.node_map:
             self.pos = find_nearest_node(maze.node_map, self.grid_x, self.grid_y)
             if self.pos:
-                # Setze Pacman genau auf die Position des Nodes
                 self.x = self.pos.grid_x * GRID_SIZE
                 self.y = self.pos.grid_y * GRID_SIZE
                 self.grid_x = self.pos.grid_x
                 self.grid_y = self.pos.grid_y
 
-        # Wenn wir einen Zielpunkt haben und ihn erreicht haben
+        # Check if target reached
         if self.target and self.reached_target():
-            # Wir sind am Ziel angekommen
             self.pos = self.target
             self.target = None
 
-            # Setze die Position exakt auf den Node
             self.x = self.pos.grid_x * GRID_SIZE
             self.y = self.pos.grid_y * GRID_SIZE
             self.grid_x = self.pos.grid_x
             self.grid_y = self.pos.grid_y
 
-            # Stoppe die Bewegung
             self.velocity_x = 0
             self.velocity_y = 0
 
-            # Tunnel-Check
+            # Tunnel check
             tunnel_exit = None
             if self.current_direction == 'left':
                 tunnel_exit = maze.get_tunnel_exit(self.grid_x, self.grid_y, -1, 0)
@@ -165,7 +184,6 @@ class Pacman:
                 tunnel_exit = maze.get_tunnel_exit(self.grid_x, self.grid_y, 1, 0)
 
             if tunnel_exit:
-                # Teleportiere Pacman zum Tunnelausgang
                 tx, ty = tunnel_exit
                 self.x = tx * GRID_SIZE
                 self.y = ty * GRID_SIZE
@@ -173,9 +191,8 @@ class Pacman:
                 self.grid_y = ty
                 self.pos = find_node_by_grid(maze.node_map, tx, ty)
 
-        # Wenn wir an einem Node sind aber kein Ziel haben
+        # Choose next direction
         if self.pos and not self.target:
-            # Versuche, in die gewünschte Richtung zu gehen
             if self.next_direction:
                 next_node = self.pos.get_neighbor_in_direction(self.next_direction)
                 if next_node:
@@ -183,20 +200,18 @@ class Pacman:
                     self.set_velocity_from_direction(self.next_direction)
                     self.current_direction = self.next_direction
                 else:
-                    # Wenn nicht möglich, versuche in aktueller Richtung weiterzugehen
                     if self.current_direction:
                         next_node = self.pos.get_neighbor_in_direction(self.current_direction)
                         if next_node:
                             self.target = next_node
                             self.set_velocity_from_direction(self.current_direction)
-            # Wenn keine neue Richtung gesetzt, versuche in aktueller weiterzugehen
             elif self.current_direction:
                 next_node = self.pos.get_neighbor_in_direction(self.current_direction)
                 if next_node:
                     self.target = next_node
                     self.set_velocity_from_direction(self.current_direction)
 
-        # Wenn wir ein Ziel haben, bewege uns in diese Richtung
+        # Move if we have a target
         if self.target:
             self.x += self.velocity_x
             self.y += self.velocity_y
@@ -206,53 +221,46 @@ class Pacman:
             self.velocity_y = 0
             self.is_moving = False
 
-        # Animation aktualisieren
+        # Update animation
         self.update_animation()
 
     def reached_target(self):
-        """Prüft, ob der Ziel-Node erreicht wurde"""
+        """Check if target node is reached"""
         if not self.target:
             return False
 
-        # Berechne die Distanz zum Ziel
         target_x = self.target.px
         target_y = self.target.py
 
-        # Berechne den Mittelpunkt von Pacman
         center_x = self.x + self.size / 2
         center_y = self.y + self.size / 2
 
-        # Prüfe, ob wir nahe genug am Ziel sind (5 Pixel Toleranz)
         distance = math.sqrt((center_x - target_x) ** 2 + (center_y - target_y) ** 2)
         return distance < 5
 
     def update_animation(self):
-        """Aktualisiert den Animationsframe"""
+        """Update animation frame"""
         if self.is_moving:
             self.animation_frame += self.animation_speed
-            if self.animation_frame >= 4:  # 4 Frames in der Animation
+            if self.animation_frame >= 4:
                 self.animation_frame = 0
 
-            # Mund öffnen/schließen Animation (Frame 0 und 2 = offen)
             frame_int = int(self.animation_frame)
             self.mouth_open = (frame_int == 0 or frame_int == 2)
 
     def set_eating(self, eating):
-        """Setzt den Eating-Status für Waka-Waka Sound"""
+        """Set eating status"""
         self.is_eating = eating
 
     def draw(self, screen):
-        """Zeichnet Pacman"""
-        # Berechne den Mittelpunkt
+        """Draw Pacman"""
         center_x = int(self.x + self.size / 2)
         center_y = int(self.y + self.size / 2)
 
-        # Wähle Farbe basierend auf Speed Boost
         color = CYAN if self.speed_boost_active else YELLOW
 
         if self.mouth_open and self.is_moving:
-            # Mund offen - Pac-Man Form
-            # Winkel basierend auf Richtung
+            # Draw Pac-Man shape
             if self.current_direction == 'right':
                 start_angle = 45
                 end_angle = 315
@@ -266,18 +274,12 @@ class Pacman:
                 start_angle = 135
                 end_angle = 45
             else:
-                # Fallback wenn keine Richtung
                 start_angle = 45
                 end_angle = 315
 
-            # Zeichne Pac-Man als Kreissegment
-            # Erstelle Punkte für den Pac-Man
             points = [(center_x, center_y)]
 
-            # Berechne die Punkte entlang des Kreisbogens
-            # Gehe in die richtige Richtung (im oder gegen Uhrzeigersinn)
             if start_angle > end_angle:
-                # Über 0 Grad hinweg
                 for angle in range(start_angle, 360, 5):
                     rad = math.radians(angle)
                     x = center_x + int(self.size/2 * math.cos(rad))
@@ -289,35 +291,30 @@ class Pacman:
                     y = center_y + int(self.size/2 * math.sin(rad))
                     points.append((x, y))
             else:
-                # Normaler Bogen
                 for angle in range(start_angle, end_angle + 1, 5):
                     rad = math.radians(angle)
                     x = center_x + int(self.size/2 * math.cos(rad))
                     y = center_y + int(self.size/2 * math.sin(rad))
                     points.append((x, y))
 
-            # Schließe die Form
             points.append((center_x, center_y))
 
             if len(points) > 2:
                 pygame.draw.polygon(screen, color, points)
-                # Zeichne Umriss für bessere Sichtbarkeit
                 pygame.draw.polygon(screen, color, points, 2)
         else:
-            # Mund geschlossen - voller Kreis
+            # Draw full circle
             pygame.draw.circle(screen, color, (center_x, center_y), int(self.size / 2))
             pygame.draw.circle(screen, color, (center_x, center_y), int(self.size / 2), 2)
 
-        # Speed boost visual effect
+        # Speed boost effect
         if self.speed_boost_active:
-            # Zeichne einen pulsierenden Ring um Pac-Man
             pulse = int(math.sin(self.speed_boost_timer * 0.1) * 3)
             pygame.draw.circle(screen, (150, 255, 255), (center_x, center_y),
                              int(self.size / 2) + 5 + pulse, 1)
 
     def reset(self, start_x=None, start_y=None):
-        """Setzt Pacman auf die Startposition zurück"""
-        # Aktualisiere die Startposition, wenn neue Werte übergeben werden
+        """Reset Pacman to starting position"""
         if start_x is not None:
             self.start_x = start_x
         if start_y is not None:
@@ -337,47 +334,48 @@ class Pacman:
         self.is_eating = False
         self.animation_frame = 0
         self.mouth_open = True
-        # Reset speed boost
         self.speed_boost_active = False
         self.speed_boost_timer = 0
+        # Speed stacks are NOT reset on death
+        self.base_speed = PACMAN_SPEED * self.stacked_speed_multiplier
         self.speed = self.base_speed
 
+    def full_reset(self, start_x=None, start_y=None):
+        """Full reset including speed stacks (new game only)"""
+        self.speed_stacks = 0
+        self.stacked_speed_multiplier = 1.0
+        self.base_speed = PACMAN_SPEED
+        self.reset(start_x, start_y)
+
     def initialize_nodes(self, nodes):
-        """Setzt die Node-Liste und initialisiert Pacman auf dem nächsten Node"""
+        """Initialize node list and position"""
         self.all_nodes = nodes
         self.pos = find_nearest_node(nodes, self.grid_x, self.grid_y)
-        # Setze Pacman genau auf die Position des Nodes für sauberen Start
         if self.pos:
             self.x = self.pos.grid_x * GRID_SIZE
             self.y = self.pos.grid_y * GRID_SIZE
 
     def get_position(self):
-        """Gibt die aktuelle Grid-Position von Pacman zurück"""
+        """Get current grid position"""
         return (self.grid_x, self.grid_y)
 
     def get_pixel_position(self):
-        """Gibt die aktuelle Pixel-Position (Mittelpunkt) von Pacman zurück"""
+        """Get current pixel position (center)"""
         center_x = self.x + self.size / 2
         center_y = self.y + self.size / 2
         return (center_x, center_y)
 
     def collides_with(self, other):
-        """Prüft, ob Pacman mit einem anderen Spielobjekt kollidiert"""
-        # Berechne den Mittelpunkt von Pacman
+        """Check collision with another object"""
         pacman_x, pacman_y = self.get_pixel_position()
 
-        # Hol die Position des anderen Objekts
         if hasattr(other, 'get_center'):
             other_x, other_y = other.get_center()
         else:
-            # Fallback
             other_x = other.x + getattr(other, 'size', 16) / 2
             other_y = other.y + getattr(other, 'size', 16) / 2
 
-        # Berechne die Distanz zwischen den Mittelpunkten
         distance = math.sqrt((pacman_x - other_x) ** 2 + (pacman_y - other_y) ** 2)
-
-        # Prüfe, ob die Distanz kleiner ist als die Summe der Radien
-        collision_distance = (self.size + getattr(other, 'size', 16)) / 2 * 0.8  # 80% für besseres Gameplay
+        collision_distance = (self.size + getattr(other, 'size', 16)) / 2 * 0.8
 
         return distance < collision_distance

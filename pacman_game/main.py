@@ -17,7 +17,7 @@ def main():
 
     # Set up the display
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-    pygame.display.set_caption("Pac-Man Game")
+    pygame.display.set_caption("Pac-Man -Hardmode- Reloaded")
 
     # Try to set icon if available
     try:
