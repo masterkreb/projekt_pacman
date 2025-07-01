@@ -63,7 +63,8 @@ class Pacman:
             self.sprite_sheet = pygame.image.load(
                 "assets/images/maze/Teil_017_Pacman_Tileset.png"
             ).convert_alpha()
-            # Frame-Größe automatisch bestimmen (4 Frames horizontal, 4 Zeilen für Richtungen)
+            # Frame-Größe automatisch bestimmen
+            # (4 Frames horizontal, 4 Zeilen für Richtungen)
             sheet_width, sheet_height = self.sprite_sheet.get_size()
             self.frame_count = 4
             self.direction_count = 4
@@ -84,7 +85,10 @@ class Pacman:
         return None
 
     def set_velocity_from_direction(self, direction):
-        """Setzt die Geschwindigkeit basierend auf Richtung - originales Pacman Movement"""
+        """
+        Setzt die Geschwindigkeit basierend auf Richtung -
+        originales Pacman Movement
+        """
         if direction == "up":
             self.velocity_x, self.velocity_y = 0, -self.speed
             self.current_direction = "up"

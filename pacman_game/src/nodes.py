@@ -78,7 +78,8 @@ def build_nodes_and_graph(maze):
             dx = neighbor.grid_x - n.grid_x
             dy = neighbor.grid_y - n.grid_y
 
-            # Wenn nicht direkt benachbart (dx oder dy > 1), prüfe ob ein gültiger Pfad existiert
+            # Wenn nicht direkt benachbart (dx oder dy > 1),
+            # prüfe ob ein gültiger Pfad existiert
             if abs(dx) > 1 or abs(dy) > 1:
                 # Prüfe für Tunnel-Verbindungen (die sind auch erlaubt)
                 tunnel_exit = maze.get_tunnel_exit(n.grid_x, n.grid_y, dx, dy)

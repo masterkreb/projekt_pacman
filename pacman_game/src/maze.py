@@ -81,7 +81,8 @@ class Maze:
                 original_image, (maze_width_px, maze_height_px)
             )
             print(
-                f"Spielfeld-Hintergrund erfolgreich geladen und skaliert auf {maze_width_px}x{maze_height_px} Pixel!"
+                f"Spielfeld-Hintergrund erfolgreich geladen und skaliert auf "
+                f"{maze_width_px}x{maze_height_px} Pixel!"
             )
         except (pygame.error, FileNotFoundError) as e:
             print(f"Konnte Spielfeld-Hintergrund nicht laden: {e}")

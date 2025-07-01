@@ -12,7 +12,10 @@ from typing import Optional, Tuple
 
 
 class Menu:
-    """Menu-Klasse als Wrapper für MenuSystem, um Kompatibilität mit game.py zu gewährleisten"""
+    """
+    Menu-Klasse als Wrapper für MenuSystem,
+    um Kompatibilität mit game.py zu gewährleisten
+    """
 
     def __init__(self, screen_width=540, screen_height=720):
         """Initialisiert das Menü-System"""
