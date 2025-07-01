@@ -20,11 +20,16 @@ def mock_pygame():
     mock_surface.get_size.return_value = (64, 64)  # Mock sprite sheet size
     mock_surface.convert_alpha.return_value = mock_surface
     
+    # Create mock font
+    mock_font = Mock()
+    mock_font.render.return_value = mock_surface
+    
     with patch('pygame.init'), \
          patch('pygame.mixer.init'), \
          patch('pygame.display.set_mode'), \
          patch('pygame.image.load', return_value=mock_surface), \
          patch('pygame.transform.scale', return_value=mock_surface), \
+         patch('pygame.font.Font', return_value=mock_font), \
          patch('pygame.mixer.Sound'), \
          patch('pygame.mixer.music'), \
          patch('pygame.time.Clock'), \
