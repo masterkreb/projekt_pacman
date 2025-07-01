@@ -6,7 +6,6 @@ School Project - Pac-Man Clone
 
 import pygame
 import os
-import math
 from .constants import *
 from .player import Pacman
 from .ghost import Ghost
@@ -172,7 +171,7 @@ class Game:
                 self.wakawaka_sound = pygame.mixer.Sound(sound_path + "wakawaka.wav")
                 self.wakawaka_sound.set_volume(0.05)  # Drastisch reduziert auf 5%
                 print("Waka-waka sound loaded!")
-            except:
+            except (pygame.error, FileNotFoundError):
                 print("Could not load wakawaka.wav")
 
             try:
@@ -180,7 +179,7 @@ class Game:
                 self.eat_ghost_sound = pygame.mixer.Sound(sound_path + "eat_ghost.wav")
                 self.eat_ghost_sound.set_volume(0.08)  # Reduziert auf 8%
                 print("Eat ghost sound loaded!")
-            except:
+            except (pygame.error, FileNotFoundError):
                 print("Could not load eat_ghost.wav")
 
             try:
@@ -189,7 +188,7 @@ class Game:
                 self.death_sound.set_volume(0.1)  # Reduziert auf 10%
                 print("Death sound loaded!")
                 self.sound_loaded = True
-            except:
+            except (pygame.error, FileNotFoundError):
                 print("Could not load death.wav")
 
         except Exception as e:
@@ -522,9 +521,8 @@ class Game:
 
         # Music status - Bottom right corner
         music_font = pygame.font.Font(None, 18)
-        music_status = "ON" if self.music_manager.music_playing else "OFF"
         music_color = GREEN if self.music_manager.music_playing else RED
-        music_text = music_font.render(f"Press M for Mute", True, music_color)
+        music_text = music_font.render("Press M for Mute", True, music_color)
         music_rect = music_text.get_rect(
             right=SCREEN_WIDTH - 10, bottom=SCREEN_HEIGHT - 5
         )

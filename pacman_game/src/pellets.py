@@ -127,7 +127,6 @@ class SpecialPellet:
 
             # Innerer Glow für Speed-Effekt
             for i in range(3):
-                glow_alpha = 60 - (i * 20)
                 glow_color = (0, 255 - (i * 50), 255 - (i * 50))
                 pygame.draw.circle(
                     screen, glow_color, (pixel_x, pixel_y), size + (i * 3), 1

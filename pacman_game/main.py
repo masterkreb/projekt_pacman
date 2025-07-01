@@ -49,13 +49,13 @@ def main():
         # Draw everything
         game.draw()
 
-        # Update the display
+        # Update display
         pygame.display.flip()
 
-        # Cap the frame rate
+        # Control frame rate
         clock.tick(FPS)
 
-    # Quit Pygame and exit
+    # Clean up
     pygame.quit()
     sys.exit()
 

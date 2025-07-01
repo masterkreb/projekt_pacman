@@ -8,7 +8,7 @@ import pygame
 import pygame_gui
 import os
 import random
-from typing import Optional, Dict, List, Tuple
+from typing import Optional, Tuple
 
 
 class Menu:
@@ -515,7 +515,7 @@ def run_menu_system():
     is_running = True
 
     while is_running:
-        time_delta = clock.tick(60) / 1000.0
+        clock.tick(60)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
