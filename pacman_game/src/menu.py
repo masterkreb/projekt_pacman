@@ -18,6 +18,7 @@ class Menu:
         """Initialisiert das Menü-System"""
         # Verwende die tatsächliche Bildschirmgröße aus der Game-Klasse
         from .constants import SCREEN_WIDTH, SCREEN_HEIGHT
+
         self.menu_system = MenuSystem(SCREEN_WIDTH, SCREEN_HEIGHT)
 
     def draw(self, surface):
@@ -87,9 +88,9 @@ class MenuSystem:
         try:
             # Versuche verschiedene Pfade für das Hintergrundbild
             possible_paths = [
-                'assets/images/ui/background.png',  # Relativer Pfad vom Projektroot
-                '../assets/images/ui/background.png',  # Relativer Pfad vom Modulordner
-                'pacman_game/assets/images/ui/background.png'  # Vollständiger Pfad
+                "assets/images/ui/background.png",  # Relativer Pfad vom Projektroot
+                "../assets/images/ui/background.png",  # Relativer Pfad vom Modulordner
+                "pacman_game/assets/images/ui/background.png",  # Vollständiger Pfad
             ]
 
             original_image = None
@@ -104,7 +105,9 @@ class MenuSystem:
                     continue
 
             if original_image is None:
-                raise FileNotFoundError("Konnte Hintergrundbild unter keinem der Pfade finden")
+                raise FileNotFoundError(
+                    "Konnte Hintergrundbild unter keinem der Pfade finden"
+                )
 
             img_width, img_height = original_image.get_size()
             target_ratio = self.screen_width / self.screen_height
@@ -114,26 +117,39 @@ class MenuSystem:
                 # Image is too wide - crop sides
                 new_width = int(img_height * target_ratio)
                 crop_x = (img_width - new_width) // 2
-                cropped_image = original_image.subsurface((crop_x, 0, new_width, img_height))
+                cropped_image = original_image.subsurface(
+                    (crop_x, 0, new_width, img_height)
+                )
             else:
                 # Image is too tall - crop top and bottom
                 new_height = int(img_width / target_ratio)
                 crop_y = (img_height - new_height) // 2
-                cropped_image = original_image.subsurface((0, crop_y, img_width, new_height))
+                cropped_image = original_image.subsurface(
+                    (0, crop_y, img_width, new_height)
+                )
 
-            self.background_image = pygame.transform.scale(cropped_image, (self.screen_width, self.screen_height))
+            self.background_image = pygame.transform.scale(
+                cropped_image, (self.screen_width, self.screen_height)
+            )
             self.has_background_image = True
             print("Background image loaded successfully!")
         except Exception as e:
             # Fallback: Erstelle einen schöneren Hintergrund als Alternative
-            self.background_image = pygame.Surface((self.screen_width, self.screen_height))
+            self.background_image = pygame.Surface(
+                (self.screen_width, self.screen_height)
+            )
 
             # Erstelle einen Farbverlauf von dunkelblau zu schwarz
             for y in range(self.screen_height):
                 # Berechne einen Farbverlauf basierend auf der y-Position
                 color_value = max(0, int(40 - (y / self.screen_height * 40)))
                 gradient_color = (0, color_value, color_value * 2)
-                pygame.draw.line(self.background_image, gradient_color, (0, y), (self.screen_width, y))
+                pygame.draw.line(
+                    self.background_image,
+                    gradient_color,
+                    (0, y),
+                    (self.screen_width, y),
+                )
 
             # Füge ein paar "Sterne" hinzu für einen Weltraum-Effekt
             for _ in range(100):
@@ -141,16 +157,22 @@ class MenuSystem:
                 star_y = random.randint(0, self.screen_height)
                 star_size = random.randint(1, 3)
                 brightness = random.randint(150, 255)
-                pygame.draw.circle(self.background_image, (brightness, brightness, brightness),
-                                   (star_x, star_y), star_size)
+                pygame.draw.circle(
+                    self.background_image,
+                    (brightness, brightness, brightness),
+                    (star_x, star_y),
+                    star_size,
+                )
 
             self.has_background_image = False
-            print(f"Hintergrundbild nicht gefunden, verwende generierte Alternative: {e}")
+            print(
+                f"Hintergrundbild nicht gefunden, verwende generierte Alternative: {e}"
+            )
 
     def start_menu_music(self):
         """Startet die Menü-Hintergrundmusik"""
         try:
-            menu_music_path = 'assets/sounds/effects/menu_music.mp3'
+            menu_music_path = "assets/sounds/effects/menu_music.mp3"
             if os.path.exists(menu_music_path):
                 pygame.mixer.music.load(menu_music_path)
                 pygame.mixer.music.set_volume(0.15)  # Drastisch reduziert auf 15%
@@ -171,10 +193,22 @@ class MenuSystem:
 
         # Sound effects with drastically reduced volume
         sound_files = {
-            'horror_start': ('assets/sounds/effects/horror_start.wav', 0.1),    # Reduziert auf 10%
-            'menu_hover': ('assets/sounds/effects/menu_hover.wav', 0.05),      # Reduziert auf 5%
-            'menu_click': ('assets/sounds/effects/menu_click.wav', 0.08),      # Reduziert auf 8%
-            'pacman_move': ('assets/sounds/effects/pacman_move.wav', 0.04)     # Reduziert auf 4%
+            "horror_start": (
+                "assets/sounds/effects/horror_start.wav",
+                0.1,
+            ),  # Reduziert auf 10%
+            "menu_hover": (
+                "assets/sounds/effects/menu_hover.wav",
+                0.05,
+            ),  # Reduziert auf 5%
+            "menu_click": (
+                "assets/sounds/effects/menu_click.wav",
+                0.08,
+            ),  # Reduziert auf 8%
+            "pacman_move": (
+                "assets/sounds/effects/pacman_move.wav",
+                0.04,
+            ),  # Reduziert auf 4%
         }
 
         for sound_name, (filename, volume) in sound_files.items():
@@ -203,8 +237,12 @@ class MenuSystem:
     def _init_ui_elements(self):
         """Initialize UI elements and button positions"""
         # Title surfaces
-        self.title_surface = self.title_font.render("PACMAN", True, pygame.Color('#FF0000'))
-        self.subtitle_surface = self.subtitle_font.render("The Return of the Blue Ghost", True, pygame.Color('#00FFFF'))
+        self.title_surface = self.title_font.render(
+            "PACMAN", True, pygame.Color("#FF0000")
+        )
+        self.subtitle_surface = self.subtitle_font.render(
+            "The Return of the Blue Ghost", True, pygame.Color("#00FFFF")
+        )
 
         # Button rectangles
         center_x = self.screen_width // 2
@@ -214,12 +252,20 @@ class MenuSystem:
     def _init_team_data(self):
         """Initialize team member data and load their images"""
         self.team_members = [
-            {"name": "Imad", "role": "Sound Designer & Creative Producer", "image": "imad.png"},
+            {
+                "name": "Imad",
+                "role": "Sound Designer & Creative Producer",
+                "image": "imad.png",
+            },
             {"name": "Mathias", "role": "Executive Producer", "image": "mathias.png"},
-            {"name": "Ricardo", "role": "Co Executive Producer", "image": "ricardo.png"},
+            {
+                "name": "Ricardo",
+                "role": "Co Executive Producer",
+                "image": "ricardo.png",
+            },
             {"name": "Leon", "role": "Visual Effects Producer", "image": "leon.png"},
             {"name": "Denis", "role": "Senior Producer", "image": "denis.png"},
-            {"name": "Erisk", "role": "Digital Producer", "image": "erisk.png"}
+            {"name": "Erisk", "role": "Digital Producer", "image": "erisk.png"},
         ]
 
         # Load team member images
@@ -233,8 +279,10 @@ class MenuSystem:
             except Exception as e:
                 # Create placeholder image
                 placeholder = pygame.Surface((80, 80))
-                placeholder.fill(pygame.Color('#333333'))
-                letter_surface = self.credits_name_font.render(member["name"][0], True, pygame.Color('#FFFFFF'))
+                placeholder.fill(pygame.Color("#333333"))
+                letter_surface = self.credits_name_font.render(
+                    member["name"][0], True, pygame.Color("#FFFFFF")
+                )
                 letter_rect = letter_surface.get_rect(center=(40, 40))
                 placeholder.blit(letter_surface, letter_rect)
                 self.team_images[member["name"]] = placeholder
@@ -252,19 +300,19 @@ class MenuSystem:
 
             if self.current_state == self.MENU:
                 if self.start_button_rect.collidepoint(mouse_pos):
-                    self._play_sound('menu_click')
+                    self._play_sound("menu_click")
 
                     # Starte den Horror-Effekt wie in Resident Evil/Silent Hill
-                    self._play_sound('horror_start')
+                    self._play_sound("horror_start")
                     self.current_state = self.HORROR_EFFECT
                     self.start_effect_timer = current_time
                     self.stop_menu_music()  # Stoppe Menü-Musik
-                    print('Starting horror effect with 5 second sound...')
+                    print("Starting horror effect with 5 second sound...")
 
                 elif self.exit_button_rect.collidepoint(mouse_pos):
-                    self._play_sound('menu_click')
+                    self._play_sound("menu_click")
                     self.stop_menu_music()  # Stoppe Menü-Musik beim Beenden
-                    return 'quit'
+                    return "quit"
 
         elif event.type == pygame.MOUSEMOTION:
             self._handle_mouse_hover(pygame.mouse.get_pos())
@@ -283,8 +331,11 @@ class MenuSystem:
             elif new_exit_hovered:
                 current_hovered = "exit"
 
-            if current_hovered != self.last_hovered_button and current_hovered is not None:
-                self._play_sound('menu_hover')
+            if (
+                current_hovered != self.last_hovered_button
+                and current_hovered is not None
+            ):
+                self._play_sound("menu_hover")
                 self.last_hovered_button = current_hovered
             elif current_hovered is None:
                 self.last_hovered_button = None
@@ -318,7 +369,7 @@ class MenuSystem:
                 self.current_state = self.GAMEPLAY
                 self.darkness_overlay = 255  # Komplett schwarz
                 print("🎮 Horror effect complete - starting game!")
-                return 'start_game'
+                return "start_game"
 
         elif self.current_state == self.GAMEPLAY:
             # Handle basic movement for demo
@@ -339,12 +390,16 @@ class MenuSystem:
                 moved = True
 
             if moved and (current_time - self.last_move_time) > self.move_sound_delay:
-                self._play_sound('pacman_move')
+                self._play_sound("pacman_move")
                 self.last_move_time = current_time
 
             # Keep player on screen
-            self.player_x = max(0, min(self.screen_width - self.player_size, self.player_x))
-            self.player_y = max(0, min(self.screen_height - self.player_size, self.player_y))
+            self.player_x = max(
+                0, min(self.screen_width - self.player_size, self.player_x)
+            )
+            self.player_y = max(
+                0, min(self.screen_height - self.player_size, self.player_y)
+            )
 
         return None
 
@@ -367,34 +422,50 @@ class MenuSystem:
         surface.blit(self.title_surface, title_rect)
 
         # Subtitle
-        subtitle_rect = self.subtitle_surface.get_rect(center=(self.screen_width // 2, 140))
+        subtitle_rect = self.subtitle_surface.get_rect(
+            center=(self.screen_width // 2, 140)
+        )
         surface.blit(self.subtitle_surface, subtitle_rect)
 
         # Buttons with hover effects
-        self._draw_button(surface, "START", self.start_button_rect, self.start_hovered, '#FFFF00')
-        self._draw_button(surface, "EXIT", self.exit_button_rect, self.exit_hovered, '#FF4444')
+        self._draw_button(
+            surface, "START", self.start_button_rect, self.start_hovered, "#FFFF00"
+        )
+        self._draw_button(
+            surface, "EXIT", self.exit_button_rect, self.exit_hovered, "#FF4444"
+        )
 
-    def _draw_button(self, surface, text: str, rect: pygame.Rect, hovered: bool, hover_color: str):
+    def _draw_button(
+        self, surface, text: str, rect: pygame.Rect, hovered: bool, hover_color: str
+    ):
         """Draw a button with hover effect"""
         # Zeichne Button-Hintergrund
         button_bg = pygame.Surface((rect.width, rect.height))
         button_bg.set_alpha(150)
-        button_bg.fill(pygame.Color('#333333'))
+        button_bg.fill(pygame.Color("#333333"))
         surface.blit(button_bg, rect)
 
         # Zeichne Button-Rahmen
-        pygame.draw.rect(surface, pygame.Color('#888888'), rect, 2)
+        pygame.draw.rect(surface, pygame.Color("#888888"), rect, 2)
 
         # Zeichne Button-Text
-        color = pygame.Color(hover_color) if hovered else pygame.Color('#FFFFFF')
+        color = pygame.Color(hover_color) if hovered else pygame.Color("#FFFFFF")
         text_surface = self.button_font.render(text, True, color)
         text_rect = text_surface.get_rect(center=rect.center)
         surface.blit(text_surface, text_rect)
 
     def _draw_gameplay(self, surface):
         """Draw gameplay demo (yellow square)"""
-        pygame.draw.rect(surface, pygame.Color('#FFFF00'),
-                         (int(self.player_x), int(self.player_y), self.player_size, self.player_size))
+        pygame.draw.rect(
+            surface,
+            pygame.Color("#FFFF00"),
+            (
+                int(self.player_x),
+                int(self.player_y),
+                self.player_size,
+                self.player_size,
+            ),
+        )
 
     def _draw_horror_effect(self, surface):
         """Draw horror transition effect wie in Resident Evil/Silent Hill"""
@@ -414,7 +485,9 @@ class MenuSystem:
                 if random.randint(0, 10) > 3:  # 70% Chance anzuzeigen
                     horror_font = pygame.font.Font(None, 48)
                     horror_text = horror_font.render("BEWARE...", True, (200, 0, 0))
-                    text_rect = horror_text.get_rect(center=(self.screen_width // 2, self.screen_height // 2))
+                    text_rect = horror_text.get_rect(
+                        center=(self.screen_width // 2, self.screen_height // 2)
+                    )
                     # Leicht zufällige Position für Zitter-Effekt
                     text_rect.x += random.randint(-2, 2)
                     text_rect.y += random.randint(-2, 2)
@@ -434,7 +507,7 @@ def run_menu_system():
     pygame.init()
     pygame.mixer.init()
 
-    pygame.display.set_caption('Pacman by the Ghostbusters')
+    pygame.display.set_caption("Pacman by the Ghostbusters")
     screen = pygame.display.set_mode((540, 720))
 
     menu = MenuSystem()
@@ -449,13 +522,13 @@ def run_menu_system():
                 is_running = False
             else:
                 result = menu.handle_event(event)
-                if result == 'quit':
+                if result == "quit":
                     is_running = False
-                elif result == 'start_game':
+                elif result == "start_game":
                     print("Game would start here!")
 
         result = menu.update()
-        if result == 'start_game':
+        if result == "start_game":
             print("Transitioning to main game!")
 
         menu.draw(screen)

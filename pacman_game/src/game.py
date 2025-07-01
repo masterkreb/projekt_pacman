@@ -14,6 +14,7 @@ from .maze import Maze
 from .pellets import PelletManager
 from .menu import Menu
 
+
 class MusicManager:
     """
     Manages background music for the Pac-Man game
@@ -25,17 +26,17 @@ class MusicManager:
         self.music_playing = False
         self.music_volume = 0.3  # Reduziert von 0.5 auf 0.3
         self.music_files = {
-            'background': 'assets/sounds//effects/background_music.mp3',
-            'game_start': 'assets/audio/game_start.ogg',
-            'game_over': 'assets/audio/game_over.ogg',
-            'level_complete': 'assets/audio/level_complete.ogg'
+            "background": "assets/sounds//effects/background_music.mp3",
+            "game_start": "assets/audio/game_start.ogg",
+            "game_over": "assets/audio/game_over.ogg",
+            "level_complete": "assets/audio/level_complete.ogg",
         }
 
     def load_background_music(self, music_file=None):
         """Load background music from file"""
         try:
             if music_file is None:
-                music_file = self.music_files['background']
+                music_file = self.music_files["background"]
 
             if os.path.exists(music_file):
                 pygame.mixer.music.load(music_file)
@@ -81,7 +82,9 @@ class MusicManager:
     def set_volume(self, volume):
         """Set music volume (0.0 to 1.0)"""
         self.music_volume = max(0.0, min(1.0, volume))
-        pygame.mixer.music.set_volume(self.music_volume * 0.15)  # Nur 15% der Lautstärke
+        pygame.mixer.music.set_volume(
+            self.music_volume * 0.15
+        )  # Nur 15% der Lautstärke
         print(f"Music volume set to: {self.music_volume * 0.15}")  # Show actual volume
 
     def toggle_music(self):
@@ -102,6 +105,7 @@ class MusicManager:
     def is_playing(self):
         """Check if music is currently playing"""
         return pygame.mixer.music.get_busy()
+
 
 class Game:
     """
@@ -146,7 +150,7 @@ class Game:
             Ghost(ghost_start_x, ghost_start_y, RED, "blinky"),
             Ghost(ghost_start_x, ghost_start_y, PINK, "pinky"),
             Ghost(ghost_start_x, ghost_start_y, CYAN, "inky"),
-            Ghost(ghost_start_x, ghost_start_y, ORANGE, "clyde")
+            Ghost(ghost_start_x, ghost_start_y, ORANGE, "clyde"),
         ]
 
         # Font for UI elements
@@ -229,10 +233,10 @@ class Game:
         if self.state == MENU:
             # Forward events to menu system
             menu_result = self.menu.handle_event(event)
-            if menu_result == 'start_game':
+            if menu_result == "start_game":
                 self.start_game()
                 return True
-            elif menu_result == 'quit':
+            elif menu_result == "quit":
                 return False
 
             # Keyboard fallback for menu
@@ -346,7 +350,7 @@ class Game:
         # Check for menu state changes
         if self.state == MENU:
             menu_result = self.menu.menu_system.update()
-            if menu_result == 'start_game':
+            if menu_result == "start_game":
                 self.start_game()
 
         if self.state == PLAYING:
@@ -471,7 +475,7 @@ class Game:
         # Score - Centered at top
         score_font = pygame.font.Font(None, 32)
         score_text = score_font.render(f"SCORE: {self.score}", True, WHITE)
-        score_rect = score_text.get_rect(centerx=SCREEN_WIDTH//2, y=ui_y_start + 5)
+        score_rect = score_text.get_rect(centerx=SCREEN_WIDTH // 2, y=ui_y_start + 5)
         self.screen.blit(score_text, score_rect)
 
         # Lives - Top right as hearts or Pac-Man symbols
@@ -484,11 +488,15 @@ class Game:
             # Simple heart shape using circles and triangle
             pygame.draw.circle(self.screen, RED, (heart_x - 4, lives_y), 5)
             pygame.draw.circle(self.screen, RED, (heart_x + 4, lives_y), 5)
-            pygame.draw.polygon(self.screen, RED, [
-                (heart_x - 8, lives_y + 2),
-                (heart_x + 8, lives_y + 2),
-                (heart_x, lives_y + 12)
-            ])
+            pygame.draw.polygon(
+                self.screen,
+                RED,
+                [
+                    (heart_x - 8, lives_y + 2),
+                    (heart_x + 8, lives_y + 2),
+                    (heart_x, lives_y + 12),
+                ],
+            )
 
         # Legend - Bottom area
         legend_font = pygame.font.Font(None, 20)
@@ -517,7 +525,9 @@ class Game:
         music_status = "ON" if self.music_manager.music_playing else "OFF"
         music_color = GREEN if self.music_manager.music_playing else RED
         music_text = music_font.render(f"Press M for Mute", True, music_color)
-        music_rect = music_text.get_rect(right=SCREEN_WIDTH - 10, bottom=SCREEN_HEIGHT - 5)
+        music_rect = music_text.get_rect(
+            right=SCREEN_WIDTH - 10, bottom=SCREEN_HEIGHT - 5
+        )
         self.screen.blit(music_text, music_rect)
 
     def draw_pause_screen(self):
@@ -528,11 +538,13 @@ class Game:
         self.screen.blit(overlay, (0, 0))
 
         pause_text = self.font.render("PAUSED", True, WHITE)
-        text_rect = pause_text.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2))
+        text_rect = pause_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
         self.screen.blit(pause_text, text_rect)
 
         resume_text = self.font.render("Press ESC to resume", True, WHITE)
-        resume_rect = resume_text.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2 + 40))
+        resume_rect = resume_text.get_rect(
+            center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 40)
+        )
         self.screen.blit(resume_text, resume_rect)
 
     def draw_game_over(self):
@@ -548,15 +560,19 @@ class Game:
 
         # Game over text
         game_over_text = self.font.render("GAME OVER", True, RED)
-        text_rect = game_over_text.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2 - 40))
+        text_rect = game_over_text.get_rect(
+            center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 40)
+        )
         self.screen.blit(game_over_text, text_rect)
 
         score_text = self.font.render(f"Final Score: {self.score}", True, WHITE)
-        score_rect = score_text.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2))
+        score_rect = score_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
         self.screen.blit(score_text, score_rect)
 
         restart_text = self.font.render("Press SPACE or Q for menu", True, WHITE)
-        restart_rect = restart_text.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2 + 40))
+        restart_rect = restart_text.get_rect(
+            center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 40)
+        )
         self.screen.blit(restart_text, restart_rect)
 
     def draw_victory(self):
@@ -571,15 +587,21 @@ class Game:
         self.screen.blit(overlay, (0, 0))
 
         victory_text = self.font.render("VICTORY!", True, GREEN)
-        text_rect = victory_text.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2 - 40))
+        text_rect = victory_text.get_rect(
+            center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 40)
+        )
         self.screen.blit(victory_text, text_rect)
 
         score_text = self.font.render(f"Final Score: {self.score}", True, WHITE)
-        score_rect = score_text.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2))
+        score_rect = score_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
         self.screen.blit(score_text, score_rect)
 
-        restart_text = self.font.render("Press SPACE to play again or Q for menu", True, WHITE)
-        restart_rect = restart_text.get_rect(center=(SCREEN_WIDTH//2, SCREEN_HEIGHT//2 + 40))
+        restart_text = self.font.render(
+            "Press SPACE to play again or Q for menu", True, WHITE
+        )
+        restart_rect = restart_text.get_rect(
+            center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 40)
+        )
         self.screen.blit(restart_text, restart_rect)
 
     def reset_after_death(self):

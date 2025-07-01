@@ -8,6 +8,7 @@ import random
 import math
 from .constants import *
 
+
 class Ghost:
     def __init__(self, start_x, start_y, color, name):
         self.start_x = start_x
@@ -16,7 +17,7 @@ class Ghost:
         self.y = start_y * GRID_SIZE
         self.grid_x = start_x
         self.grid_y = start_y
-        
+
         self.color = color
         self.name = name
         self.direction = UP  # Geister starten nach oben schauend
@@ -111,7 +112,9 @@ class Ghost:
             center_y = MAZE_HEIGHT // 2
             if abs(self.grid_x - center_x) <= 1 and abs(self.grid_y - center_y) <= 2:
                 # Ghost ist am Eingang angekommen - wiedergeboren
-                self.mode = self.previous_mode if self.previous_mode != FRIGHTENED else SCATTER
+                self.mode = (
+                    self.previous_mode if self.previous_mode != FRIGHTENED else SCATTER
+                )
                 self.in_house = True
                 self.grid_x = center_x
                 self.grid_y = center_y
@@ -138,10 +141,10 @@ class Ghost:
         self.house_exit_timer += 1
 
         exit_timers = {
-            "blinky": 0,     # Sofort (ist schon draußen)
-            "pinky": 60,     # 1 Sekunde
-            "inky": 180,     # 3 Sekunden
-            "clyde": 300     # 5 Sekunden
+            "blinky": 0,  # Sofort (ist schon draußen)
+            "pinky": 60,  # 1 Sekunde
+            "inky": 180,  # 3 Sekunden
+            "clyde": 300,  # 5 Sekunden
         }
 
         if self.house_exit_timer >= exit_timers.get(self.name, 0):
@@ -204,10 +207,10 @@ class Ghost:
         if self.mode == SCATTER:
             # Each ghost has a fixed corner in scatter mode
             corners = {
-                "blinky": (MAZE_WIDTH - 2, 0),              # Top-right
-                "pinky": (2, 0),                            # Top-left
+                "blinky": (MAZE_WIDTH - 2, 0),  # Top-right
+                "pinky": (2, 0),  # Top-left
                 "inky": (MAZE_WIDTH - 1, MAZE_HEIGHT - 1),  # Bottom-right
-                "clyde": (0, MAZE_HEIGHT - 1)               # Bottom-left
+                "clyde": (0, MAZE_HEIGHT - 1),  # Bottom-left
             }
             self.target_x, self.target_y = corners.get(self.name, (0, 0))
 
@@ -220,16 +223,16 @@ class Ghost:
             elif self.name == "pinky":
                 # Pink ghost - targets 4 tiles ahead of Pac-Man
                 direction_offsets = {
-                    'up': (0, -4),
-                    'down': (0, 4),
-                    'left': (-4, 0),
-                    'right': (4, 0),
-                    None: (0, 0)
+                    "up": (0, -4),
+                    "down": (0, 4),
+                    "left": (-4, 0),
+                    "right": (4, 0),
+                    None: (0, 0),
                 }
                 offset = direction_offsets.get(pacman.current_direction, (0, 0))
 
                 # Berühmter Pinky "Bug" - bei UP geht sie 4 hoch und 4 links
-                if pacman.current_direction == 'up':
+                if pacman.current_direction == "up":
                     offset = (-4, -4)
 
                 self.target_x = pacman_x + offset[0]
@@ -239,16 +242,16 @@ class Ghost:
                 # Cyan ghost - komplexestes Verhalten
                 # 1. Finde Punkt 2 Tiles vor Pac-Man
                 direction_offsets = {
-                    'up': (0, -2),
-                    'down': (0, 2),
-                    'left': (-2, 0),
-                    'right': (2, 0),
-                    None: (0, 0)
+                    "up": (0, -2),
+                    "down": (0, 2),
+                    "left": (-2, 0),
+                    "right": (2, 0),
+                    None: (0, 0),
                 }
                 offset = direction_offsets.get(pacman.current_direction, (0, 0))
 
                 # Inky "Bug" - bei UP geht er 2 hoch und 2 links
-                if pacman.current_direction == 'up':
+                if pacman.current_direction == "up":
                     offset = (-2, -2)
 
                 pivot_x = pacman_x + offset[0]
@@ -263,8 +266,9 @@ class Ghost:
 
             elif self.name == "clyde":
                 # Orange ghost - schüchtern
-                distance = math.sqrt((self.grid_x - pacman_x)**2 +
-                                   (self.grid_y - pacman_y)**2)
+                distance = math.sqrt(
+                    (self.grid_x - pacman_x) ** 2 + (self.grid_y - pacman_y) ** 2
+                )
 
                 if distance > 8:
                     # Weit weg: Verhalte dich wie Blinky
@@ -350,8 +354,11 @@ class Ghost:
                 continue
 
             # Check if the direction is valid (not a wall)
-            if (0 <= next_x < MAZE_WIDTH and 0 <= next_y < MAZE_HEIGHT and
-                not maze.is_wall(next_x, next_y)):
+            if (
+                0 <= next_x < MAZE_WIDTH
+                and 0 <= next_y < MAZE_HEIGHT
+                and not maze.is_wall(next_x, next_y)
+            ):
                 possible_directions.append(direction)
 
         if not possible_directions:
@@ -366,15 +373,16 @@ class Ghost:
             else:
                 # Wähle Richtung die am nächsten zum Ziel führt
                 best_direction = possible_directions[0]
-                best_distance = float('inf')
+                best_distance = float("inf")
 
                 for direction in possible_directions:
                     next_x = self.grid_x + direction[0]
                     next_y = self.grid_y + direction[1]
 
                     # Berechne Distanz zum Ziel (Pac-Man's Entfernungsberechnung)
-                    distance = math.sqrt((next_x - self.target_x)**2 +
-                                       (next_y - self.target_y)**2)
+                    distance = math.sqrt(
+                        (next_x - self.target_x) ** 2 + (next_y - self.target_y) ** 2
+                    )
 
                     # Bei Gleichstand: Priorität UP > LEFT > DOWN > RIGHT
                     if distance < best_distance:
@@ -414,12 +422,19 @@ class Ghost:
             bottom_y = draw_y + radius
             wave_points = []
             for i in range(-radius, radius + 1, 4):
-                wave_y = bottom_y + (3 if (i + int(self.animation_frame * 10)) % 8 < 4 else 0)
+                wave_y = bottom_y + (
+                    3 if (i + int(self.animation_frame * 10)) % 8 < 4 else 0
+                )
                 wave_points.append((draw_x + i, wave_y))
 
             if len(wave_points) > 1:
-                pygame.draw.polygon(screen, color,
-                                  [(draw_x - radius, draw_y)] + wave_points + [(draw_x + radius, draw_y)])
+                pygame.draw.polygon(
+                    screen,
+                    color,
+                    [(draw_x - radius, draw_y)]
+                    + wave_points
+                    + [(draw_x + radius, draw_y)],
+                )
 
         # Draw eyes (always visible)
         eye_color = WHITE
@@ -431,13 +446,21 @@ class Ghost:
 
         # Left eye
         pygame.draw.circle(screen, eye_color, (int(draw_x - 6), int(draw_y - 4)), 3)
-        pygame.draw.circle(screen, pupil_color,
-                         (int(draw_x - 6 + pupil_offset_x), int(draw_y - 4 + pupil_offset_y)), 1)
+        pygame.draw.circle(
+            screen,
+            pupil_color,
+            (int(draw_x - 6 + pupil_offset_x), int(draw_y - 4 + pupil_offset_y)),
+            1,
+        )
 
         # Right eye
         pygame.draw.circle(screen, eye_color, (int(draw_x + 6), int(draw_y - 4)), 3)
-        pygame.draw.circle(screen, pupil_color,
-                         (int(draw_x + 6 + pupil_offset_x), int(draw_y - 4 + pupil_offset_y)), 1)
+        pygame.draw.circle(
+            screen,
+            pupil_color,
+            (int(draw_x + 6 + pupil_offset_x), int(draw_y - 4 + pupil_offset_y)),
+            1,
+        )
 
     def get_position(self):
         """Get current grid position"""
@@ -483,7 +506,11 @@ class Ghost:
 
     def set_frightened(self):
         """Set ghost to frightened mode"""
-        if self.mode != EATEN and not self.in_house:  # Gegessene Geister und Geister im Haus werden nicht verängstigt
-            self.previous_mode = self.mode if self.mode != FRIGHTENED else self.previous_mode
+        if (
+            self.mode != EATEN and not self.in_house
+        ):  # Gegessene Geister und Geister im Haus werden nicht verängstigt
+            self.previous_mode = (
+                self.mode if self.mode != FRIGHTENED else self.previous_mode
+            )
             self.switch_mode(FRIGHTENED)
             self.mode_timer = 0

@@ -8,6 +8,7 @@ import random
 import math
 from .constants import *
 
+
 class Pellet:
     def __init__(self, x, y, is_power_pellet=False):
         self.x = x
@@ -19,7 +20,9 @@ class Pellet:
 
         # Eigenschaften aus dem ursprünglichen Code
         # Power Pellets sind WEISS/ROSA (wie im Original), normale Pellets GELB
-        self.color = (255, 184, 255) if is_power_pellet else YELLOW  # Rosa-weißlich für Power Pellet
+        self.color = (
+            (255, 184, 255) if is_power_pellet else YELLOW
+        )  # Rosa-weißlich für Power Pellet
         self.points = LARGE_PELLET_POINTS if is_power_pellet else SMALL_PELLET_POINTS
         self.radius = LARGE_PELLET_SIZE if is_power_pellet else SMALL_PELLET_SIZE
         self.visible = True
@@ -33,7 +36,7 @@ class Pellet:
         # Normale Pellets sind immer gespawnt
         self.spawned = True
 
-    def update(self, dt=1/60):
+    def update(self, dt=1 / 60):
         """Update pellet animation"""
         # Animation für Power-Pellets
         if self.is_power_pellet and not self.collected:
@@ -57,7 +60,9 @@ class Pellet:
                 size = LARGE_PELLET_SIZE + int(self.animation_frame * 2)
                 pygame.draw.circle(screen, self.color, (pixel_x, pixel_y), size)
                 # Glow-Effekt
-                pygame.draw.circle(screen, (255, 220, 255), (pixel_x, pixel_y), size + 2, 1)
+                pygame.draw.circle(
+                    screen, (255, 220, 255), (pixel_x, pixel_y), size + 2, 1
+                )
             else:
                 # Normales Pellet
                 pygame.draw.circle(screen, self.color, (pixel_x, pixel_y), self.radius)
@@ -80,7 +85,8 @@ class Pellet:
 
 class SpecialPellet:
     """Special pellet for speed boost"""
-    def __init__(self, x, y, pellet_type='speed'):
+
+    def __init__(self, x, y, pellet_type="speed"):
         self.x = x
         self.y = y
         self.grid_x = x
@@ -100,7 +106,7 @@ class SpecialPellet:
         self.animation_speed = 0.2
         self.pulse_effect = 0
 
-    def update(self, dt=1/60):
+    def update(self, dt=1 / 60):
         """Update special pellet animation"""
         if not self.collected:
             self.animation_frame += self.animation_speed
@@ -123,12 +129,16 @@ class SpecialPellet:
             for i in range(3):
                 glow_alpha = 60 - (i * 20)
                 glow_color = (0, 255 - (i * 50), 255 - (i * 50))
-                pygame.draw.circle(screen, glow_color, (pixel_x, pixel_y), size + (i * 3), 1)
+                pygame.draw.circle(
+                    screen, glow_color, (pixel_x, pixel_y), size + (i * 3), 1
+                )
 
             # Hauptkreis
             pygame.draw.circle(screen, self.color, (pixel_x, pixel_y), size)
             # Highlight
-            pygame.draw.circle(screen, (150, 255, 255), (pixel_x - 2, pixel_y - 2), size // 3)
+            pygame.draw.circle(
+                screen, (150, 255, 255), (pixel_x - 2, pixel_y - 2), size // 3
+            )
 
     def get_points(self):
         """Get points value for this pellet"""
@@ -158,9 +168,9 @@ class PelletManager:
 
         # Definiere mögliche Power Pellet Positionen (alle Ecken)
         self.power_pellet_positions = [
-            (1, 3),                              # Oben links
-            (self.maze.width - 2, 3),           # Oben rechts
-            (1, self.maze.height - 4),          # Unten links
+            (1, 3),  # Oben links
+            (self.maze.width - 2, 3),  # Oben rechts
+            (1, self.maze.height - 4),  # Unten links
             (self.maze.width - 2, self.maze.height - 4),  # Unten rechts
         ]
 
@@ -173,7 +183,7 @@ class PelletManager:
                 if not self.maze.is_wall(x, y):
                     # Skip ghost starting area (center area)
                     center_x, center_y = self.maze.get_center_position()
-                    if (abs(x - center_x) <= 3 and abs(y - center_y) <= 3):
+                    if abs(x - center_x) <= 3 and abs(y - center_y) <= 3:
                         continue
 
                     # Don't place pellets too close to Pac-Man start
@@ -198,7 +208,9 @@ class PelletManager:
                 self.spawn_power_pellet()
 
         # Update active power pellets
-        for pellet in self.active_power_pellets[:]:  # Copy list to allow removal during iteration
+        for pellet in self.active_power_pellets[
+            :
+        ]:  # Copy list to allow removal during iteration
             pellet.update()
 
         # Speed Pellet spawn logic (max 1)
@@ -218,11 +230,14 @@ class PelletManager:
         for pellet in self.active_power_pellets:
             occupied_positions.append((pellet.x, pellet.y))
         if self.active_speed_pellet:
-            occupied_positions.append((self.active_speed_pellet.x, self.active_speed_pellet.y))
+            occupied_positions.append(
+                (self.active_speed_pellet.x, self.active_speed_pellet.y)
+            )
 
         # Finde freie Positionen
-        available_positions = [pos for pos in self.power_pellet_positions
-                             if pos not in occupied_positions]
+        available_positions = [
+            pos for pos in self.power_pellet_positions if pos not in occupied_positions
+        ]
 
         if available_positions:
             # Wähle eine zufällige freie Position
@@ -248,14 +263,15 @@ class PelletManager:
         for pellet in self.active_power_pellets:
             occupied_positions.append((pellet.x, pellet.y))
 
-        available_positions = [pos for pos in self.power_pellet_positions
-                             if pos not in occupied_positions]
+        available_positions = [
+            pos for pos in self.power_pellet_positions if pos not in occupied_positions
+        ]
 
         if available_positions:
             position = random.choice(available_positions)
 
             # Erstelle Speed Pellet als SpecialPellet
-            self.active_speed_pellet = SpecialPellet(position[0], position[1], 'speed')
+            self.active_speed_pellet = SpecialPellet(position[0], position[1], "speed")
 
             # Reset timer
             self.speed_pellet_timer = 0
@@ -294,14 +310,17 @@ class PelletManager:
             # Prüfe auch basierend auf Pac-Mans exakter Pixel-Position
             (int(pacman.x // GRID_SIZE), int(pacman.y // GRID_SIZE)),
             # Prüfe Mittelpunkt von Pac-Man
-            (int((pacman.x + pacman.size/2) // GRID_SIZE), int((pacman.y + pacman.size/2) // GRID_SIZE))
+            (
+                int((pacman.x + pacman.size / 2) // GRID_SIZE),
+                int((pacman.y + pacman.size / 2) // GRID_SIZE),
+            ),
         ]
 
         # Prüfe normale Pellets
         for pellet in self.pellets:
             if not pellet.collected and pellet.spawned:
                 for check_x, check_y in positions_to_check:
-                    if (pellet.grid_x == check_x and pellet.grid_y == check_y):
+                    if pellet.grid_x == check_x and pellet.grid_y == check_y:
                         pellet.collected = True
                         total_points += pellet.get_points()
                         break  # Aus der inner loop ausbrechen
@@ -310,7 +329,7 @@ class PelletManager:
         for pellet in self.active_power_pellets[:]:  # Copy list for safe removal
             if not pellet.collected:
                 for check_x, check_y in positions_to_check:
-                    if (pellet.grid_x == check_x and pellet.grid_y == check_y):
+                    if pellet.grid_x == check_x and pellet.grid_y == check_y:
                         pellet.collected = True
                         total_points += pellet.get_points()
                         power_pellet_eaten = True
@@ -318,21 +337,27 @@ class PelletManager:
                         self.active_power_pellets.remove(pellet)
                         # Reset timer für nächstes
                         self.power_pellet_timer = 0
-                        self.power_pellet_spawn_delay = random.randint(360, 600)  # 6-10 Sekunden
+                        self.power_pellet_spawn_delay = random.randint(
+                            360, 600
+                        )  # 6-10 Sekunden
                         break
 
         # Prüfe Speed Pellet
         if self.active_speed_pellet and not self.active_speed_pellet.collected:
             for check_x, check_y in positions_to_check:
-                if (self.active_speed_pellet.grid_x == check_x and
-                    self.active_speed_pellet.grid_y == check_y):
+                if (
+                    self.active_speed_pellet.grid_x == check_x
+                    and self.active_speed_pellet.grid_y == check_y
+                ):
                     self.active_speed_pellet.collected = True
                     total_points += self.active_speed_pellet.get_points()
                     speed_pellet_eaten = True
                     # Reset für nächstes Speed Pellet
                     self.active_speed_pellet = None
                     self.speed_pellet_timer = 0
-                    self.speed_pellet_spawn_delay = random.randint(720, 900)  # 12-15 Sekunden
+                    self.speed_pellet_spawn_delay = random.randint(
+                        720, 900
+                    )  # 12-15 Sekunden
                     break
 
         # Rückgabe mit verschiedenen Signalen
@@ -359,7 +384,11 @@ class PelletManager:
                 return False
         # Prüfe auch ob noch nicht-gespawnte normale Pellets existieren
         for pellet in self.pellets:
-            if not pellet.collected and not pellet.is_power_pellet and not pellet.spawned:
+            if (
+                not pellet.collected
+                and not pellet.is_power_pellet
+                and not pellet.spawned
+            ):
                 return False
         return True
 
@@ -374,7 +403,12 @@ class PelletManager:
     def get_pellet_at(self, x, y):
         """Get pellet at specific grid position"""
         for pellet in self.pellets:
-            if pellet.grid_x == x and pellet.grid_y == y and not pellet.collected and pellet.spawned:
+            if (
+                pellet.grid_x == x
+                and pellet.grid_y == y
+                and not pellet.collected
+                and pellet.spawned
+            ):
                 return pellet
         return None
 
