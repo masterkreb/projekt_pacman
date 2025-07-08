@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Pac-Man Game - Main Entry Point
 Simple Pac-Man game implementation using Pygame
@@ -8,6 +7,7 @@ import pygame
 import sys
 from src.game import Game
 from src.constants import SCREEN_WIDTH, SCREEN_HEIGHT, FPS
+
 
 def main():
     """Main function to start the Pac-Man game"""
@@ -49,15 +49,16 @@ def main():
         # Draw everything
         game.draw()
 
-        # Update the display
+        # Update display
         pygame.display.flip()
 
-        # Cap the frame rate
+        # Control frame rate
         clock.tick(FPS)
 
-    # Quit Pygame and exit
+    # Clean up
     pygame.quit()
     sys.exit()
+
 
 if __name__ == "__main__":
     main()

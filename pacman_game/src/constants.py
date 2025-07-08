@@ -49,7 +49,7 @@ LIVES = 3
 # Aber unser Spielfeld ist größer, also 1.3x schneller
 PACMAN_SPEED = 1.733  # 1.33 * 1.3 für größeres Spielfeld
 PACMAN_SPEED_BOOST = PACMAN_SPEED * 2  # Doppelte Geschwindigkeit mit Speed Pellet
-GHOST_SPEED = 1.3    # 75% von Pac-Man's Geschwindigkeit
+GHOST_SPEED = 1.3  # 75% von Pac-Man's Geschwindigkeit
 
 # Sizes
 PACMAN_SIZE = 16

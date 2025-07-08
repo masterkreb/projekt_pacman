@@ -5,6 +5,7 @@ Basiert auf dem ursprünglichen node.py Code und spielfeld.py
 
 from .constants import GRID_SIZE
 
+
 class Node:
     def __init__(self, grid_x, grid_y):
         self.grid_x = grid_x
@@ -19,12 +20,7 @@ class Node:
     def get_neighbor_in_direction(self, direction):
         """Gibt den Nachbar-Node in der angegebenen Richtung zurück (falls vorhanden)"""
         # Konvertiere String-Richtung in dx, dy
-        dir_vectors = {
-            'up': (0, -1),
-            'down': (0, 1),
-            'left': (-1, 0),
-            'right': (1, 0)
-        }
+        dir_vectors = {"up": (0, -1), "down": (0, 1), "left": (-1, 0), "right": (1, 0)}
 
         if direction not in dir_vectors:
             return None
@@ -34,18 +30,21 @@ class Node:
         # Suche nach einem Nachbarn in der angegebenen Richtung
         for neighbor in self.neighbors:
             # Prüfe, ob der Nachbar in der gewünschten Richtung liegt
-            if (neighbor.grid_x - self.grid_x == dx and
-                neighbor.grid_y - self.grid_y == dy):
+            if (
+                neighbor.grid_x - self.grid_x == dx
+                and neighbor.grid_y - self.grid_y == dy
+            ):
                 return neighbor
 
         # Kein Nachbar in dieser Richtung gefunden
         return None
 
+
 def build_nodes_and_graph(maze):
     """Erstellt Knoten und Graphen aus dem Maze - basierend auf ursprünglichem Code"""
     nodes = []
     node_map = {}
-    
+
     # Erstelle Knoten für alle freien Felder
     for y in range(maze.height):
         for x in range(maze.width):
@@ -70,7 +69,7 @@ def build_nodes_and_graph(maze):
                 # Prüfe, ob der Weg zwischen den Nodes frei ist
                 # Direkte Nachbarn sind immer erreichbar, wenn beide keine Wände sind
                 n.neighbors.append(node_map[(nx, ny)])
-    
+
     # Entferne ungültige Verbindungen, die durch Wände führen würden
     for n in nodes:
         valid_neighbors = []
@@ -79,7 +78,8 @@ def build_nodes_and_graph(maze):
             dx = neighbor.grid_x - n.grid_x
             dy = neighbor.grid_y - n.grid_y
 
-            # Wenn nicht direkt benachbart (dx oder dy > 1), prüfe ob ein gültiger Pfad existiert
+            # Wenn nicht direkt benachbart (dx oder dy > 1),
+            # prüfe ob ein gültiger Pfad existiert
             if abs(dx) > 1 or abs(dy) > 1:
                 # Prüfe für Tunnel-Verbindungen (die sind auch erlaubt)
                 tunnel_exit = maze.get_tunnel_exit(n.grid_x, n.grid_y, dx, dy)
@@ -93,6 +93,7 @@ def build_nodes_and_graph(maze):
 
     return nodes, node_map
 
+
 def find_nearest_node(node_map, grid_x, grid_y):
     """Findet den nächsten Node zu den angegebenen Grid-Koordinaten"""
     # Prüfe zuerst, ob exakt an diesen Koordinaten ein Node existiert
@@ -100,7 +101,7 @@ def find_nearest_node(node_map, grid_x, grid_y):
         return node_map[(grid_x, grid_y)]
 
     # Wenn nicht, suche nach dem nächstgelegenen Node
-    min_distance = float('inf')
+    min_distance = float("inf")
     nearest_node = None
 
     for (nx, ny), node in node_map.items():
@@ -112,6 +113,7 @@ def find_nearest_node(node_map, grid_x, grid_y):
             nearest_node = node
 
     return nearest_node
+
 
 def find_node_by_grid(node_map, grid_x, grid_y):
     """Findet einen Node an den exakten Grid-Koordinaten oder gibt None zurück"""

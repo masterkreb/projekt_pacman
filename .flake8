@@ -1,0 +1,15 @@
+[flake8]
+max-line-length = 88
+exclude =
+    __pycache__,
+    .git,
+    .pytest_cache,
+    build,
+    dist
+ignore =
+    E203,
+    W503
+per-file-ignores =
+    pacman_game/src/constants.py:F401,F403
+    pacman_game/src/*.py:F403,F405
+
