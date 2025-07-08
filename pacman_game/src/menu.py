@@ -178,7 +178,7 @@ class MenuSystem:
             menu_music_path = "assets/sounds/effects/menu_music.mp3"
             if os.path.exists(menu_music_path):
                 pygame.mixer.music.load(menu_music_path)
-                pygame.mixer.music.set_volume(0.05)  # Drastisch reduziert auf 15%
+                pygame.mixer.music.set_volume(1.0)  # Drastisch reduziert auf 15%
                 pygame.mixer.music.play(-1)  # Loop unendlich
                 print("Menu music loaded and started at 15% volume!")
             else:
@@ -198,11 +198,11 @@ class MenuSystem:
         sound_files = {
             "horror_start": (
                 "assets/sounds/effects/horror_start.wav",
-                0.1,
+                1.0,
             ),  # Reduziert auf 10%
             "menu_hover": (
                 "assets/sounds/effects/menu_hover.wav",
-                0.05,
+                1.0,
             ),  # Reduziert auf 5%
           #  "menu_click": (
            #     "assets/sounds/effects/menu_click.wav",
