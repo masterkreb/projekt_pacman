@@ -178,7 +178,7 @@ class MenuSystem:
             menu_music_path = "assets/sounds/effects/menu_music.mp3"
             if os.path.exists(menu_music_path):
                 pygame.mixer.music.load(menu_music_path)
-                pygame.mixer.music.set_volume(0.15)  # Drastisch reduziert auf 15%
+                pygame.mixer.music.set_volume(0.05)  # Drastisch reduziert auf 15%
                 pygame.mixer.music.play(-1)  # Loop unendlich
                 print("Menu music loaded and started at 15% volume!")
             else:
@@ -204,14 +204,14 @@ class MenuSystem:
                 "assets/sounds/effects/menu_hover.wav",
                 0.05,
             ),  # Reduziert auf 5%
-            "menu_click": (
-                "assets/sounds/effects/menu_click.wav",
-                0.08,
-            ),  # Reduziert auf 8%
-            "pacman_move": (
-                "assets/sounds/effects/pacman_move.wav",
-                0.04,
-            ),  # Reduziert auf 4%
+          #  "menu_click": (
+           #     "assets/sounds/effects/menu_click.wav",
+            #    0.08,
+            #),  # Reduziert auf 8%
+            # "pacman_move": (
+            #   "assets/sounds/effects/pacman_move.wav",
+        #  0.04,
+            #   ),  # Reduziert auf 4%
         }
 
         for sound_name, (filename, volume) in sound_files.items():
@@ -238,14 +238,14 @@ class MenuSystem:
             self.button_font = default_font
 
     def _init_ui_elements(self):
-        """Initialize UI elements and button positions"""
-        # Title surfaces
-        self.title_surface = self.title_font.render(
-            "PACMAN", True, pygame.Color("#FF0000")
-        )
-        self.subtitle_surface = self.subtitle_font.render(
-            "The Return of the Blue Ghost", True, pygame.Color("#00FFFF")
-        )
+    #     """Initialize UI elements and button positions"""
+    #     # Title surfaces
+    #     self.title_surface = self.title_font.render(
+    #         "PACMAN", True, pygame.Color("#FF0000")
+    #     )
+    #     self.subtitle_surface = self.subtitle_font.render(
+    #         "The Return of the Blue Ghost", True, pygame.Color("#00FFFF")
+    #     )
 
         # Button rectangles
         center_x = self.screen_width // 2
@@ -420,15 +420,15 @@ class MenuSystem:
 
     def _draw_main_menu(self, surface):
         """Draw the main menu"""
-        # Title
-        title_rect = self.title_surface.get_rect(center=(self.screen_width // 2, 100))
-        surface.blit(self.title_surface, title_rect)
-
-        # Subtitle
-        subtitle_rect = self.subtitle_surface.get_rect(
-            center=(self.screen_width // 2, 140)
-        )
-        surface.blit(self.subtitle_surface, subtitle_rect)
+        # # Title
+        # title_rect = self.title_surface.get_rect(center=(self.screen_width // 2, 100))
+        # surface.blit(self.title_surface, title_rect)
+        #
+        # # Subtitle
+        # subtitle_rect = self.subtitle_surface.get_rect(
+        #     center=(self.screen_width // 2, 140)
+        # )
+        # surface.blit(self.subtitle_surface, subtitle_rect)
 
         # Buttons with hover effects
         self._draw_button(
@@ -482,19 +482,19 @@ class MenuSystem:
             dark_surface.set_alpha(self.darkness_overlay)
             surface.blit(dark_surface, (0, 0))
 
-            # Optional: Zeige einen gruseligen Text während der Verdunkelung
-            if self.darkness_overlay > 128:  # Wenn mehr als halb dunkel
-                # Erstelle einen flackernden Text-Effekt
-                if random.randint(0, 10) > 3:  # 70% Chance anzuzeigen
-                    horror_font = pygame.font.Font(None, 48)
-                    horror_text = horror_font.render("BEWARE...", True, (200, 0, 0))
-                    text_rect = horror_text.get_rect(
-                        center=(self.screen_width // 2, self.screen_height // 2)
-                    )
-                    # Leicht zufällige Position für Zitter-Effekt
-                    text_rect.x += random.randint(-2, 2)
-                    text_rect.y += random.randint(-2, 2)
-                    surface.blit(horror_text, text_rect)
+            # # Optional: Zeige einen gruseligen Text während der Verdunkelung
+            # if self.darkness_overlay > 128:  # Wenn mehr als halb dunkel
+            #     # Erstelle einen flackernden Text-Effekt
+            #     if random.randint(0, 10) > 3:  # 70% Chance anzuzeigen
+            #         horror_font = pygame.font.Font(None, 48)
+            #         horror_text = horror_font.render("BEWARE...", True, (200, 0, 0))
+            #         text_rect = horror_text.get_rect(
+            #             center=(self.screen_width // 2, self.screen_height // 2)
+            #         )
+            #         # Leicht zufällige Position für Zitter-Effekt
+            #         text_rect.x += random.randint(-2, 2)
+            #         text_rect.y += random.randint(-2, 2)
+            #         surface.blit(horror_text, text_rect)
 
     def get_current_state(self) -> int:
         """Get the current menu state"""

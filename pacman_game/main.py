@@ -41,10 +41,15 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
             else:
-                game.handle_event(event)
+                # Handle game events and check for quit signal
+                result = game.handle_event(event)
+                if result == "quit":
+                    running = False
 
-        # Update game state
-        game.update()
+        # Update game state and check for quit signal
+        result = game.update()
+        if result == "quit":
+            running = False
 
         # Draw everything
         game.draw()

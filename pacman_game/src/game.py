@@ -23,7 +23,7 @@ class MusicManager:
     def __init__(self):
         self.music_loaded = False
         self.music_playing = False
-        self.music_volume = 0.3  # Reduziert von 0.5 auf 0.3
+        self.music_volume = 0.5  # Reduziert von 0.5 auf 0.3
         self.music_files = {
             "background": "assets/sounds//effects/background_music.mp3",
             "game_start": "assets/audio/game_start.ogg",
@@ -169,7 +169,7 @@ class Game:
             try:
                 # Waka-waka sound for eating pellets
                 self.wakawaka_sound = pygame.mixer.Sound(sound_path + "wakawaka.wav")
-                self.wakawaka_sound.set_volume(0.05)  # Drastisch reduziert auf 5%
+                self.wakawaka_sound.set_volume(0.02)  # Drastisch reduziert auf 5%
                 print("Waka-waka sound loaded!")
             except (pygame.error, FileNotFoundError):
                 print("Could not load wakawaka.wav")
@@ -177,7 +177,7 @@ class Game:
             try:
                 # Ghost eating sound
                 self.eat_ghost_sound = pygame.mixer.Sound(sound_path + "eat_ghost.wav")
-                self.eat_ghost_sound.set_volume(0.08)  # Reduziert auf 8%
+                self.eat_ghost_sound.set_volume(0.1)  # Reduziert auf 8%
                 print("Eat ghost sound loaded!")
             except (pygame.error, FileNotFoundError):
                 print("Could not load eat_ghost.wav")
@@ -185,7 +185,7 @@ class Game:
             try:
                 # Death sound effect
                 self.death_sound = pygame.mixer.Sound(sound_path + "death.wav")
-                self.death_sound.set_volume(0.1)  # Reduziert auf 10%
+                self.death_sound.set_volume(0.03)  # Reduziert auf 10%
                 print("Death sound loaded!")
                 self.sound_loaded = True
             except (pygame.error, FileNotFoundError):
@@ -236,7 +236,7 @@ class Game:
                 self.start_game()
                 return True
             elif menu_result == "quit":
-                return False
+                return "quit"
 
             # Keyboard fallback for menu
             if event.type == pygame.KEYDOWN:
