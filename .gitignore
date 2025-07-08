@@ -1,0 +1,20 @@
+# 🚫 Ignoriere PyCharm-Projektdateien
+.idea/
+
+# 🚫 Python-Cache-Dateien
+__pycache__/
+*.py[cod]
+*.pyo
+*.log
+
+# 🚫 Virtuelle Umgebungen
+.venv/
+env/
+venv/
+
+# 🚫 Temporäre Dateien / OS
+*.DS_Store
+*.swp
+*.bak
+*.tmp
+Thumbs.db
